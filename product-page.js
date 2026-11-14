@@ -83,11 +83,17 @@ if(!p){
   }
  });
  $("pProof").onchange=e=>{$("pVerify").disabled=!(e.target.files&&e.target.files[0]&&e.target.files[0].type.startsWith("image/"))||expired};
- $("pVerify").onclick=()=>{
+ $("pVerify").onclick=async()=>{
   if(expired){alert("Your 15-minute payment session expired.");return}
-  if(!$("pProof").files[0]){alert("Please upload your payment screenshot first.");return}
+  const file=$("pProof").files[0];
+  if(!file){alert("Please upload your payment screenshot first.");return}
   const method=pForm.querySelector('input[name="payment"]:checked');
-  const message=`Hello CheapSewa! I have paid and would like you to verify my payment.\n\nName: ${form.elements.name.value}\nPhone: ${form.elements.phone.value}\nProduct: ${p.name}\nPlan: ${chosen()[0]}\nTotal: ${money(chosen()[1])}\nPayment method: ${method?method.value:"-"}\n\nI will attach my payment screenshot here.`;
+  const btn=$("pVerify");btn.disabled=true;btn.textContent="Saving your order…";
+  let orderId="";
+  try{
+   orderId=await window.CSOrder.submit({name:form.elements.name.value,phone:form.elements.phone.value,product:p.name,plan:chosen()[0],amount:chosen()[1],method:method?method.value:""},file);
+  }catch(err){console.error(err)}
+  const message=`Hello CheapSewa! I have paid and would like you to verify my payment.\n\n${orderId?"Order ID: "+orderId+"\n":""}Name: ${form.elements.name.value}\nPhone: ${form.elements.phone.value}\nProduct: ${p.name}\nPlan: ${chosen()[0]}\nTotal: ${money(chosen()[1])}\nPayment method: ${method?method.value:"-"}\n\nI will attach my payment screenshot here.`;
   location.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(message);
  };
  document.getElementById("mobileCart")?.addEventListener("click",()=>location.href="index.html#shop");

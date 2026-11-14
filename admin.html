@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>CheapSewa Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f5f6fb;color:#151a30}
+.wrap{max-width:980px;margin:0 auto;padding:20px}h1{font-size:22px;margin:0}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.login{max-width:340px;margin:90px auto;background:#fff;padding:26px;border-radius:16px;box-shadow:0 10px 30px #1a1f4a14}
+input,select{width:100%;padding:11px 12px;border:1px solid #dde1ee;border-radius:10px;font-size:14px;margin:10px 0}
+button{border:0;border-radius:10px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px;background:#5b3df5;color:#fff}
+button.light{background:#eef0fa;color:#33395c}button.green{background:#10a56b}button.red{background:#d9464e}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 4px 16px #1a1f4a0d}
+.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.muted{color:#6a7190;font-size:13px}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.pending{background:#fff3d6;color:#8a5a00}.approved{background:#dcf5e8;color:#0b7a4d}.rejected{background:#fde2e4;color:#b02a33}.delivered{background:#e3e8ff;color:#3a47b8}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}img.shot{max-width:100%;max-height:520px;margin-top:12px;border-radius:10px;border:1px solid #e3e6f2}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+</style></head><body>
+<div id="loginBox" class="login"><h1>Admin login</h1><input id="pw" type="password" placeholder="Admin password" autocomplete="current-password"><button id="loginBtn" style="width:100%">Sign in</button><p id="err" class="muted" style="color:#b02a33"></p></div>
+<div id="app" class="wrap" hidden>
+ <div class="bar"><h1>Orders</h1><div><button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
+ <div class="filters" id="filters"></div><div id="list"></div>
+</div>
+<script>
+var pw=sessionStorage.getItem("csadmin")||"",orders=[],filter="all";
+var $=function(id){return document.getElementById(id)};
+function api(path,opt){opt=opt||{};opt.headers=Object.assign({"x-admin-password":pw},opt.headers||{});return fetch("/api/admin"+path,opt)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+async function load(){
+ var r=await api("?action=list");
+ if(r.status===401){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("err").textContent="Wrong password";return}
+ var j=await r.json();orders=j.orders||[];$("loginBox").hidden=true;$("app").hidden=false;render();
+}
+function render(){
+ var st=["all","pending","approved","rejected","delivered"];
+ $("filters").innerHTML=st.map(function(s){var n=s==="all"?orders.length:orders.filter(function(o){return o.status===s}).length;return '<button class="'+(s===filter?"":"light")+'" data-f="'+s+'">'+s[0].toUpperCase()+s.slice(1)+" ("+n+")</button>"}).join("");
+ $("filters").querySelectorAll("button").forEach(function(b){b.onclick=function(){filter=b.dataset.f;render()}});
+ var list=orders.filter(function(o){return filter==="all"||o.status===filter});
+ $("list").innerHTML=list.length?list.map(function(o){return '<div class="card" data-id="'+esc(o.id)+'"><div class="row"><b>'+esc(o.product)+'</b><span class="tag '+esc(o.status)+'">'+esc(o.status)+'</span></div>'+
+  '<div class="muted">'+esc(o.plan)+' · NPR '+Number(o.amount).toLocaleString("en-IN")+' · '+esc(o.method)+'</div>'+
+  '<div style="margin-top:6px">'+esc(o.name)+' · <a href="https://wa.me/'+esc(String(o.phone).replace(/^\+/,""))+'" target="_blank" rel="noopener">'+esc(o.phone)+'</a></div>'+
+  '<div class="muted">'+new Date(o.createdAt).toLocaleString()+' · ID '+esc(o.id)+'</div>'+
+  '<div class="acts">'+(o.hasImage?'<button class="light" data-a="shot">View screenshot</button>':'<span class="muted">Screenshot deleted</span>')+
+  '<button class="green" data-a="approved">Approve</button><button class="red" data-a="rejected">Reject</button><button data-a="delivered">Mark delivered</button><button class="light" data-a="delete">Delete</button></div><div class="shotbox"></div></div>'}).join(""):'<p class="muted">No orders here yet.</p>';
+ $("list").querySelectorAll(".card").forEach(function(card){card.querySelectorAll("button[data-a]").forEach(function(b){b.onclick=function(){act(card,b.dataset.a)}})});
+}
+async function act(card,a){
+ var id=card.dataset.id;
+ if(a==="shot"){var r=await api("?action=image&id="+encodeURIComponent(id));if(!r.ok){alert("Screenshot not available");return}var u=URL.createObjectURL(await r.blob());card.querySelector(".shotbox").innerHTML='<img class="shot" src="'+u+'" alt="Payment screenshot">';return}
+ if(a==="delete"&&!confirm("Delete this order and its screenshot permanently?"))return;
+ var body=a==="delete"?{action:"delete",id:id}:{action:"status",id:id,status:a};
+ var r2=await api("",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+ if(!r2.ok){alert("Could not update");return}
+ await load();
+}
+$("loginBtn").onclick=function(){pw=$("pw").value;sessionStorage.setItem("csadmin",pw);$("err").textContent="";load()};
+$("pw").onkeydown=function(e){if(e.key==="Enter")$("loginBtn").click()};
+$("refresh").onclick=load;$("logout").onclick=function(){sessionStorage.removeItem("csadmin");pw="";orders=[];$("app").hidden=true;$("loginBox").hidden=false;$("pw").value=""};
+if(pw)load();
+</script></body></html>

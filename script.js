@@ -65,12 +65,15 @@ $("#checkoutPaidBtn").addEventListener("click",()=>{
 $("#proofInput").addEventListener("change",e=>{
  $("#checkoutVerifyBtn").disabled=!(e.target.files&&e.target.files[0]&&e.target.files[0].type.startsWith("image/"))||paymentExpired;
 });
-$("#checkoutVerifyBtn").addEventListener("click",()=>{
+$("#checkoutVerifyBtn").addEventListener("click",async()=>{
  if(paymentExpired){toast("Your 15-minute payment session expired");return}
  const file=$("#proofInput").files[0];if(!file){toast("Please select your payment screenshot");return}
  const fd=new FormData($("#checkoutForm"));
  const items=cart.map(x=>`${x.name} (${x.plan}) x ${x.qty}`).join(", ");
- const message=`Hello CheapSewa! I have paid and would like you to verify my payment.\n\nName: ${fd.get("name")}\nPhone: ${fd.get("phone")}\nOrder: ${items}\nTotal: ${money(totalCart())}\nPayment method: ${fd.get("payment")}\n\nI will attach my payment screenshot here.`;
+ const btn=$("#checkoutVerifyBtn");btn.disabled=true;btn.textContent="Saving your order…";
+ let orderId="";
+ try{orderId=await window.CSOrder.submit({name:fd.get("name"),phone:fd.get("phone"),product:items,plan:"Cart order",amount:totalCart(),method:fd.get("payment")},file)}catch(err){console.error(err)}
+ const message=`Hello CheapSewa! I have paid and would like you to verify my payment.\n\n${orderId?"Order ID: "+orderId+"\n":""}Name: ${fd.get("name")}\nPhone: ${fd.get("phone")}\nOrder: ${items}\nTotal: ${money(totalCart())}\nPayment method: ${fd.get("payment")}\n\nI will attach my payment screenshot here.`;
  location.href="https://wa.me/9779716537747?text="+encodeURIComponent(message);
 });
 $("#searchInput").addEventListener("input",renderProducts);$("#sortSelect").addEventListener("change",renderProducts);$("#openCart").onclick=openCart;$("#checkoutBtn").onclick=checkout;$("#overlay").onclick=closeModals;$$("[data-close]").forEach(b=>b.onclick=closeModals);

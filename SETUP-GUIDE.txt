@@ -1,0 +1,21 @@
+CHEAPSEWA - ORDER STORAGE + ADMIN PAGE SETUP
+
+FOLDER LAYOUT (this matters)
+  package.json, netlify.toml        -> top level of the GitHub repo
+  netlify/functions/*.mjs            -> the backend
+  public/                            -> the website itself (index.html, admin.html, ...)
+
+1. GitHub: open your repo, delete the old files, then upload EVERYTHING from this folder
+   (drag in package.json, netlify.toml, and the netlify and public folders).
+2. Netlify: Project configuration -> Environment variables -> Add a variable
+   Key: ADMIN_PASSWORD   Value: a long password (at least 8 characters, 12+ is better)
+3. Netlify will redeploy by itself. If not: Deploys -> Trigger deploy -> Deploy project.
+4. Check Deploys -> Functions: submit-order, admin and cleanup should be listed.
+5. Test: place an order on your site, then open https://yourdomain/admin.html and log in.
+
+NOTES
+- Screenshots are stored privately; only the admin page can display them.
+- Screenshots are auto-deleted after 60 days (change KEEP_DAYS in netlify/functions/cleanup.mjs).
+- Each phone number can submit 5 orders per hour.
+- Changing the admin password: edit the variable in Netlify and redeploy.
+- Customers are still sent to WhatsApp after the order is saved; if saving fails, they are sent anyway.
