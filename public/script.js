@@ -3,10 +3,10 @@ let cart=[],activeCategory="All",selectedProduct=null;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const money=n=>"NPR "+Number(n).toLocaleString("en-IN");
 function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2300)}
-function renderProducts(){let list=products.filter(p=>(activeCategory==="All"||p.cat===activeCategory||(activeCategory==="Design"&&p.cat==="Design"))&&(`${p.name} ${p.cat} ${p.desc}`).toLowerCase().includes($("#searchInput").value.toLowerCase()));const sort=$("#sortSelect").value;if(sort==="low")list.sort((a,b)=>Math.min(...a.plans.map(x=>x[1]))-Math.min(...b.plans.map(x=>x[1])));if(sort==="high")list.sort((a,b)=>Math.min(...b.plans.map(x=>x[1]))-Math.min(...a.plans.map(x=>x[1])));if(sort==="az")list.sort((a,b)=>a.name.localeCompare(b.name));$("#productGrid").innerHTML=list.map(p=>`<article class="product-card"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${p.name} plans"><div class="product-art" style="--art:${p.color}"><span class="product-cat">${p.cat}</span><div class="product-symbol" style="color:${p.color}">${p.symbol}</div></div><div class="product-body"><h3>${p.name}</h3><p>${p.desc}</p><div class="product-foot"><span class="price">${money(Math.min(...p.plans.map(x=>x[1])))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`).join("");$("#emptyState").hidden=!!list.length;}
+function renderProducts(){let list=products.filter(p=>(activeCategory==="All"||p.cat===activeCategory||(activeCategory==="Design"&&p.cat==="Design"))&&(`${p.name} ${p.cat} ${p.desc}`).toLowerCase().includes($("#searchInput").value.toLowerCase()));const sort=$("#sortSelect").value;if(sort==="low")list.sort((a,b)=>Math.min(...a.plans.map(x=>x[1]))-Math.min(...b.plans.map(x=>x[1])));if(sort==="high")list.sort((a,b)=>Math.min(...b.plans.map(x=>x[1]))-Math.min(...a.plans.map(x=>x[1])));if(sort==="az")list.sort((a,b)=>a.name.localeCompare(b.name));$("#productGrid").innerHTML=list.map(p=>`<article class="product-card"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${p.name} plans"><div class="product-art" style="--art:${p.color}"><span class="product-cat">${p.cat}</span>${p.inStock===false?'<span class="oos">Out of stock</span>':''}<div class="product-symbol" style="color:${p.color}">${p.symbol}</div></div><div class="product-body"><h3>${p.name}</h3><p>${p.desc}</p><div class="product-foot"><span class="price">${money(Math.min(...p.plans.map(x=>x[1])))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`).join("");$("#emptyState").hidden=!!list.length;}
 function setCategory(c){activeCategory=c;$$("[data-cat]").forEach(b=>b.classList.toggle("active",b.dataset.cat===c));renderProducts();$("#categoryMenu").classList.remove("show");document.querySelector("#shop").scrollIntoView({behavior:"smooth"})}
 function openProduct(id){selectedProduct=products.find(p=>p.id===id);$("#productModalBody").innerHTML=`<div class="modal-product-head"><div class="modal-product-symbol" style="color:${selectedProduct.color}">${selectedProduct.symbol}</div><div><h2>${selectedProduct.name}</h2><p>${selectedProduct.desc}</p></div></div><span class="eyebrow">CHOOSE YOUR PLAN</span><div class="plan-list">${selectedProduct.plans.map((pl,i)=>`<label class="plan-choice"><span><b>${pl[0]}</b><small>${i===0?"Popular choice":"Digital subscription plan"}</small></span><strong>${money(pl[1])}</strong><input type="radio" name="plan" value="${i}" ${i===0?"checked":""}></label>`).join("")}</div><button class="primary-btn full" id="addSelected">Add to cart <span>➜</span></button>`;showModal("#productModal");$("#addSelected").onclick=()=>{let i=+$('input[name="plan"]:checked').value;addCart(selectedProduct,selectedProduct.plans[i]);closeModals()}}
-function addCart(p,plan){let key=p.id+"-"+plan[0],item=cart.find(x=>x.key===key);if(item)item.qty++;else cart.push({key,id:p.id,name:p.name,plan:plan[0],price:plan[1],qty:1});renderCart();toast("Added to cart")}
+function addCart(p,plan){if(p.inStock===false){toast("Sorry, this product is out of stock");return}let key=p.id+"-"+plan[0],item=cart.find(x=>x.key===key);if(item)item.qty++;else cart.push({key,id:p.id,name:p.name,plan:plan[0],price:plan[1],qty:1});renderCart();toast("Added to cart")}
 function renderCart(){let count=cart.reduce((s,x)=>s+x.qty,0),total=cart.reduce((s,x)=>s+x.price*x.qty,0);$("#cartCount").textContent=count;$("#drawerCount").textContent="("+count+")";$("#cartTotal").textContent=money(total);$("#cartItems").innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><div><b>${x.name}</b><small>${x.plan} · ${money(x.price)}</small><small>${money(x.price*x.qty)}</small></div><div class="qty"><button data-dec="${x.key}">−</button><b>${x.qty}</b><button data-inc="${x.key}">+</button></div></div>`).join(""):'<div class="empty-state">Your cart is empty.<br>Explore products to get started.</div>';$$("[data-inc]").forEach(b=>b.onclick=()=>{cart.find(x=>x.key===b.dataset.inc).qty++;renderCart()});$$("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart.find(x=>x.key===b.dataset.dec);x.qty--;if(x.qty<=0)cart=cart.filter(y=>y!==x);renderCart()})}
 function openCart(){closeModals();$("#cartDrawer").classList.add("open");$("#overlay").classList.add("show")}
 function showModal(id){$("#overlay").classList.add("show");$(id).classList.add("show")}
@@ -71,15 +71,21 @@ $("#checkoutVerifyBtn").addEventListener("click",async()=>{
  const fd=new FormData($("#checkoutForm"));
  const items=cart.map(x=>`${x.name} (${x.plan}) x ${x.qty}`).join(", ");
  const btn=$("#checkoutVerifyBtn");btn.disabled=true;btn.textContent="Saving your order…";
- let orderId="";
- try{orderId=await window.CSOrder.submit({name:fd.get("name"),phone:fd.get("phone"),product:items,plan:"Cart order",amount:totalCart(),method:fd.get("payment")},file)}catch(err){console.error(err)}
- const message=`Hello CheapSewa! I have paid and would like you to verify my payment.\n\n${orderId?"Order ID: "+orderId+"\n":""}Name: ${fd.get("name")}\nPhone: ${fd.get("phone")}\nOrder: ${items}\nTotal: ${money(totalCart())}\nPayment method: ${fd.get("payment")}\n\nI will attach my payment screenshot here.`;
- location.href="https://wa.me/9779716537747?text="+encodeURIComponent(message);
+ try{
+  const id=await window.CSOrder.submit({name:fd.get("name"),phone:fd.get("phone"),product:items,plan:"Cart order",amount:totalCart(),method:fd.get("payment"),productIds:cart.map(x=>x.id)},file);
+  stopPaymentTimer();
+  const msg=`Hello CheapSewa! I have paid.\nOrder ID: ${id}\nName: ${fd.get("name")}\nTotal: ${money(totalCart())}`;
+  const phone=fd.get("phone");cart=[];renderCart();
+  window.CSOrder.done($("#checkoutStep4"),id,{phone:phone,wa:"https://wa.me/9779716537747?text="+encodeURIComponent(msg)});
+ }catch(err){
+  console.error(err);btn.disabled=false;btn.innerHTML="Verify payment <span>→</span>";
+  alert((err&&err.message)||"Could not save your order. Please try again.");
+ }
 });
 $("#searchInput").addEventListener("input",renderProducts);$("#sortSelect").addEventListener("change",renderProducts);$("#openCart").onclick=openCart;$("#checkoutBtn").onclick=checkout;$("#overlay").onclick=closeModals;$$("[data-close]").forEach(b=>b.onclick=closeModals);
-$("#categoryToggle").onclick=()=>$("#categoryMenu").classList.toggle("show");$("#categoryMenu").querySelectorAll("button").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$$(".category-card").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$$(".filter-chips button").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$("#loginBtn").onclick=()=>showModal("#loginModal");$("#loginDemo").onclick=()=>toast("Account sign-in is not connected yet");$("#hamb").onclick=()=>$("#navlinks").classList.toggle("open");$("#year").textContent=new Date().getFullYear();
+$("#categoryToggle").onclick=()=>$("#categoryMenu").classList.toggle("show");$("#categoryMenu").querySelectorAll("button").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$$(".category-card").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$$(".filter-chips button").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$("#loginBtn").onclick=()=>location.href="account.html";$("#hamb").onclick=()=>$("#navlinks").classList.toggle("open");$("#year").textContent=new Date().getFullYear();
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModals();if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("#searchInput").focus()}});
-renderProducts();renderCart();
+(window.CS_READY||Promise.resolve()).then(()=>{renderProducts();renderCart()});
 
 /* Smooth subscription-store style hero carousel */
 (()=> {
@@ -112,10 +118,17 @@ renderProducts();renderCart();
  play();
 })();
 
+/* Mobile categories sheet */
+(()=>{const m=$("#categoryMenu"),b=$("#mobileCats");
+ const open=()=>{m.classList.toggle("show")};
+ b?.addEventListener("click",open);
+ if(location.hash==="#categories"&&innerWidth<=700)setTimeout(()=>m.classList.add("show"),300);
+ document.addEventListener("click",e=>{if(innerWidth<=700&&m.classList.contains("show")&&!m.contains(e.target)&&!(b&&b.contains(e.target))&&e.target.id!=="categoryToggle")m.classList.remove("show")});
+})();
 /* Fixed mobile navigation */
 (()=> {
  const cartButton=$("#mobileCart"),loginButton=$("#mobileLogin"),count=$("#cartCount"),mobileCount=$("#mobileCartCount");
  cartButton?.addEventListener("click",openCart);
- loginButton?.addEventListener("click",()=>showModal("#loginModal"));
+ loginButton?.addEventListener("click",()=>location.href="account.html");
  if(count&&mobileCount){new MutationObserver(()=>mobileCount.textContent=count.textContent).observe(count,{childList:true,characterData:true,subtree:true});mobileCount.textContent=count.textContent;}
 })();

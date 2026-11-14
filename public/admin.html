@@ -3,58 +3,104 @@
 <meta name="robots" content="noindex,nofollow"><title>CheapSewa Admin</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f5f6fb;color:#151a30}
-.wrap{max-width:980px;margin:0 auto;padding:20px}h1{font-size:22px;margin:0}
-.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}h1{font-size:21px;margin:0}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .login{max-width:340px;margin:90px auto;background:#fff;padding:26px;border-radius:16px;box-shadow:0 10px 30px #1a1f4a14}
-input,select{width:100%;padding:11px 12px;border:1px solid #dde1ee;border-radius:10px;font-size:14px;margin:10px 0}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #dde1ee;border-radius:10px;font-size:14px;margin:6px 0;font-family:inherit}
 button{border:0;border-radius:10px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px;background:#5b3df5;color:#fff}
 button.light{background:#eef0fa;color:#33395c}button.green{background:#10a56b}button.red{background:#d9464e}
 .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 4px 16px #1a1f4a0d}
-.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.muted{color:#6a7190;font-size:13px}
-.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
-.pending{background:#fff3d6;color:#8a5a00}.approved{background:#dcf5e8;color:#0b7a4d}.rejected{background:#fde2e4;color:#b02a33}.delivered{background:#e3e8ff;color:#3a47b8}
+.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}.muted{color:#6a7190;font-size:13px}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#e3e8ff;color:#3a47b8}
+.tag.pending{background:#fff3d6;color:#8a5a00}.tag.approved,.tag.delivered{background:#dcf5e8;color:#0b7a4d}.tag.rejected{background:#fde2e4;color:#b02a33}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}img.shot{max-width:100%;max-height:520px;margin-top:12px;border-radius:10px;border:1px solid #e3e6f2}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.plans{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.plans label{font-size:12px;color:#6a7190;font-weight:600}
+.bar h1{background:linear-gradient(135deg,#5b3df5,#10a56b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag.verifying{background:#e0ecff;color:#1f55b8}.tag.processing{background:#efe5ff;color:#6a35c9}
+button:disabled{opacity:.6;cursor:wait}input[type=number]{font-size:16px}
+@media(max-width:560px){.wrap{padding:12px}.acts button,.acts select{flex:1 1 40%}.login{margin:40px 14px}}
 </style></head><body>
-<div id="loginBox" class="login"><h1>Admin login</h1><input id="pw" type="password" placeholder="Admin password" autocomplete="current-password"><button id="loginBtn" style="width:100%">Sign in</button><p id="err" class="muted" style="color:#b02a33"></p></div>
+<div id="loginBox" class="login"><h1>CheapSewa Admin</h1><p class="muted" style="margin:6px 0 10px">Sign in to manage orders, prices and stock.</p><input id="pw" type="password" placeholder="Admin password" autocomplete="current-password"><button id="loginBtn" style="width:100%;margin-top:8px">Sign in</button><p id="err" class="muted" style="color:#b02a33"></p></div>
 <div id="app" class="wrap" hidden>
- <div class="bar"><h1>Orders</h1><div><button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
- <div class="filters" id="filters"></div><div id="list"></div>
+ <div class="bar"><h1>CheapSewa Admin</h1><div><button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
+ <div class="tabs" id="tabs"></div><div id="view"></div>
 </div>
+<script src="products-data.js"></script>
 <script>
-var pw=sessionStorage.getItem("csadmin")||"",orders=[],filter="all";
-var $=function(id){return document.getElementById(id)};
-function api(path,opt){opt=opt||{};opt.headers=Object.assign({"x-admin-password":pw},opt.headers||{});return fetch("/api/admin"+path,opt)}
+var pw=sessionStorage.getItem("csadmin")||"",orders=[],users=[],ov={},tab="orders",filter="all";
+var STAGES=["pending","verifying","approved","processing","delivered","rejected"];
+var NAMES={pending:"Order received",verifying:"Verifying payment",approved:"Payment approved",processing:"Preparing subscription",delivered:"Delivered",rejected:"Rejected"};
+var $=function(i){return document.getElementById(i)};
+function api(p,o){o=o||{};o.headers=Object.assign({"x-admin-password":pw},o.headers||{});return fetch("/api/admin"+p,o)}
+function post(b){return api("",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)})}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+async function diagnose(){
+ try{
+  var r=await fetch("/api/admin?action=ping",{cache:"no-store"});
+  if(r.status===404)return"The admin server function was not found (404). The netlify folder was not deployed. Re-upload the whole project to GitHub (package.json, netlify.toml, netlify folder, public folder) and redeploy.";
+  var j=await r.json();
+  if(j&&j.configured===false)return"ADMIN_PASSWORD is not set on the server (or is shorter than 8 characters). In Netlify: Project configuration > Environment variables > add ADMIN_PASSWORD, then Deploys > Trigger deploy.";
+  return"Wrong password. Type it again exactly as saved in Netlify ADMIN_PASSWORD.";
+ }catch(e){return"Cannot reach the server. This page must be opened from your live Netlify site (https://yoursite.netlify.app/admin.html), not from a file or another host."}
+}
+function showLogin(msg){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("err").textContent=msg||""}
 async function load(){
- var r=await api("?action=list");
- if(r.status===401){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("err").textContent="Wrong password";return}
- var j=await r.json();orders=j.orders||[];$("loginBox").hidden=true;$("app").hidden=false;render();
+ $("err").textContent="";$("loginBtn").disabled=true;
+ try{
+  var r=await api("?action=list");
+  if(r.status===401){showLogin(await diagnose());return}
+  var j=await r.json().catch(function(){return null});
+  if(!r.ok||!j||!j.ok){showLogin("Server problem ("+r.status+"): "+((j&&j.error)||"no response")+". Check Netlify > Logs > Functions.");return}
+  orders=j.orders||[];
+  var u=await api("?action=users");users=((await u.json().catch(function(){return{}})).users)||[];
+  var c=await fetch("/api/catalog");ov=((await c.json().catch(function(){return{}})).overrides)||{};
+  $("loginBox").hidden=true;$("app").hidden=false;render();
+ }catch(e){showLogin("Network error: "+e.message)}
+ finally{$("loginBtn").disabled=false}
 }
 function render(){
- var st=["all","pending","approved","rejected","delivered"];
- $("filters").innerHTML=st.map(function(s){var n=s==="all"?orders.length:orders.filter(function(o){return o.status===s}).length;return '<button class="'+(s===filter?"":"light")+'" data-f="'+s+'">'+s[0].toUpperCase()+s.slice(1)+" ("+n+")</button>"}).join("");
- $("filters").querySelectorAll("button").forEach(function(b){b.onclick=function(){filter=b.dataset.f;render()}});
- var list=orders.filter(function(o){return filter==="all"||o.status===filter});
- $("list").innerHTML=list.length?list.map(function(o){return '<div class="card" data-id="'+esc(o.id)+'"><div class="row"><b>'+esc(o.product)+'</b><span class="tag '+esc(o.status)+'">'+esc(o.status)+'</span></div>'+
-  '<div class="muted">'+esc(o.plan)+' · NPR '+Number(o.amount).toLocaleString("en-IN")+' · '+esc(o.method)+'</div>'+
-  '<div style="margin-top:6px">'+esc(o.name)+' · <a href="https://wa.me/'+esc(String(o.phone).replace(/^\+/,""))+'" target="_blank" rel="noopener">'+esc(o.phone)+'</a></div>'+
-  '<div class="muted">'+new Date(o.createdAt).toLocaleString()+' · ID '+esc(o.id)+'</div>'+
-  '<div class="acts">'+(o.hasImage?'<button class="light" data-a="shot">View screenshot</button>':'<span class="muted">Screenshot deleted</span>')+
-  '<button class="green" data-a="approved">Approve</button><button class="red" data-a="rejected">Reject</button><button data-a="delivered">Mark delivered</button><button class="light" data-a="delete">Delete</button></div><div class="shotbox"></div></div>'}).join(""):'<p class="muted">No orders here yet.</p>';
- $("list").querySelectorAll(".card").forEach(function(card){card.querySelectorAll("button[data-a]").forEach(function(b){b.onclick=function(){act(card,b.dataset.a)}})});
+ $("tabs").innerHTML=[["orders","Orders ("+orders.length+")"],["products","Products & prices"],["users","Customers ("+users.length+")"]].map(function(t){return'<button class="'+(tab===t[0]?"":"light")+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join("");
+ $("tabs").querySelectorAll("button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;render()}});
+ if(tab==="orders")renderOrders();else if(tab==="products")renderProducts();else renderUsers();
 }
-async function act(card,a){
- var id=card.dataset.id;
- if(a==="shot"){var r=await api("?action=image&id="+encodeURIComponent(id));if(!r.ok){alert("Screenshot not available");return}var u=URL.createObjectURL(await r.blob());card.querySelector(".shotbox").innerHTML='<img class="shot" src="'+u+'" alt="Payment screenshot">';return}
- if(a==="delete"&&!confirm("Delete this order and its screenshot permanently?"))return;
- var body=a==="delete"?{action:"delete",id:id}:{action:"status",id:id,status:a};
- var r2=await api("",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
- if(!r2.ok){alert("Could not update");return}
+function renderOrders(){
+ var f=["all"].concat(STAGES),h='<div class="tabs">'+f.map(function(s){var n=s==="all"?orders.length:orders.filter(function(o){return o.status===s}).length;return'<button class="'+(s===filter?"":"light")+'" data-f="'+s+'">'+(NAMES[s]||"All")+" ("+n+")</button>"}).join("")+"</div>";
+ var list=orders.filter(function(o){return filter==="all"||o.status===filter});
+ h+=list.length?list.map(function(o){return'<div class="card" data-id="'+esc(o.id)+'"><div class="row"><b>'+esc(o.product)+'</b><span class="tag '+esc(o.status)+'">'+esc(NAMES[o.status]||o.status)+'</span></div>'+
+ '<div class="muted">'+esc(o.plan)+' · NPR '+Number(o.amount).toLocaleString("en-IN")+' · '+esc(o.method)+'</div>'+
+ '<div style="margin-top:6px">'+esc(o.name)+' · <a href="https://wa.me/'+esc(String(o.phone).replace(/^\+/,""))+'" target="_blank" rel="noopener">'+esc(o.phone)+'</a>'+(o.userEmail?' · '+esc(o.userEmail):'')+'</div>'+
+ '<div class="muted">'+new Date(o.createdAt).toLocaleString()+' · ID '+esc(o.id)+'</div>'+
+ '<div class="acts">'+(o.hasImage?'<button class="light" data-a="shot">View screenshot</button>':'<span class="muted">Screenshot deleted</span>')+'<button class="red" data-a="delete">Delete</button></div>'+
+ '<div class="acts" style="align-items:center"><select data-s style="width:auto;margin:0">'+STAGES.map(function(s){return'<option value="'+s+'"'+(s===o.status?" selected":"")+'>'+NAMES[s]+'</option>'}).join("")+'</select><button class="green" data-a="save">Update order</button></div>'+
+ '<textarea data-n rows="2" placeholder="Message shown to the customer (e.g. login details or delivery info)">'+esc(o.note||"")+'</textarea><div class="shotbox"></div></div>'}).join(""):'<p class="muted">No orders here yet.</p>';
+ $("view").innerHTML=h;
+ $("view").querySelectorAll("[data-f]").forEach(function(b){b.onclick=function(){filter=b.dataset.f;render()}});
+ $("view").querySelectorAll(".card[data-id]").forEach(function(c){c.querySelectorAll("button[data-a]").forEach(function(b){b.onclick=function(){act(c,b.dataset.a)}})});
+}
+async function act(c,a){
+ var id=c.dataset.id;
+ if(a==="shot"){var r=await api("?action=image&id="+encodeURIComponent(id));if(!r.ok){alert("Screenshot not available");return}c.querySelector(".shotbox").innerHTML='<img class="shot" src="'+URL.createObjectURL(await r.blob())+'" alt="Payment screenshot">';return}
+ if(a==="delete"){if(!confirm("Delete this order and its screenshot permanently?"))return;await post({action:"delete",id:id});return load()}
+ var r2=await post({action:"status",id:id,status:c.querySelector("[data-s]").value,note:c.querySelector("[data-n]").value});
+ if(!r2.ok){alert("Could not update ("+r2.status+")");return}
  await load();
+}
+function renderProducts(){
+ $("view").innerHTML=(window.CS_PRODUCTS||[]).map(function(p){var o=ov[p.id]||{};var oos=o.inStock===false;
+  return'<div class="card" data-p="'+p.id+'"><div class="row"><b>'+esc(p.name)+'</b><select data-stock style="width:auto;margin:0"><option value="1"'+(oos?"":" selected")+'>In stock</option><option value="0"'+(oos?" selected":"")+'>Out of stock</option></select></div>'+
+  '<div class="plans">'+p.plans.map(function(pl,i){var v=o.prices&&o.prices[i]!=null?o.prices[i]:pl[1];return'<div><label>'+esc(pl[0])+' (NPR)</label><input type="number" min="0" data-price="'+i+'" value="'+Number(v)+'"></div>'}).join("")+'</div><button data-save>Save product</button> <span class="muted" data-msg></span></div>'}).join("");
+ $("view").querySelectorAll("[data-p]").forEach(function(c){c.querySelector("[data-save]").onclick=async function(){
+  var prices=[].map.call(c.querySelectorAll("[data-price]"),function(i){return Number(i.value)});
+  var r=await post({action:"setProduct",productId:Number(c.dataset.p),prices:prices,inStock:c.querySelector("[data-stock]").value==="1"});
+  c.querySelector("[data-msg]").textContent=r.ok?"Saved. Live on the site now.":"Could not save ("+r.status+")";if(r.ok)ov[c.dataset.p]={prices:prices,inStock:c.querySelector("[data-stock]").value==="1"}}});
+}
+function renderUsers(){
+ $("view").innerHTML=users.length?users.map(function(u){return'<div class="card"><b>'+esc(u.name)+'</b><div class="muted">'+esc(u.email)+(u.phone?' · '+esc(u.phone):'')+'</div><div class="muted">Joined '+new Date(u.createdAt).toLocaleDateString()+'</div><div class="acts"><button class="light" data-reset="'+esc(u.email)+'">Set new password</button></div></div>'}).join("")+'<p class="muted">Passwords are stored as secure hashes and cannot be viewed by anyone, including you. If a customer forgets theirs, use Set new password and tell them the new one.</p>':'<p class="muted">No customers have registered yet.</p>';
+ $("view").querySelectorAll("[data-reset]").forEach(function(b){b.onclick=async function(){var np=prompt("New password for "+b.dataset.reset+" (min 8 characters):");if(!np)return;var r=await post({action:"resetUser",email:b.dataset.reset,password:np});var j=await r.json().catch(function(){return{}});alert(r.ok?"Password changed.":(j.error||"Failed"))}});
 }
 $("loginBtn").onclick=function(){pw=$("pw").value;sessionStorage.setItem("csadmin",pw);$("err").textContent="";load()};
 $("pw").onkeydown=function(e){if(e.key==="Enter")$("loginBtn").click()};
-$("refresh").onclick=load;$("logout").onclick=function(){sessionStorage.removeItem("csadmin");pw="";orders=[];$("app").hidden=true;$("loginBox").hidden=false;$("pw").value=""};
+$("refresh").onclick=load;$("logout").onclick=function(){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("pw").value=""};
 if(pw)load();
 </script></body></html>

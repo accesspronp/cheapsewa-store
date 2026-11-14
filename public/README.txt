@@ -74,3 +74,8 @@ CHECKOUT POPUP + WHATSAPP REDIRECT UPDATE
 - Same simplified step 4 applied to the homepage cart checkout.
 - Fixed: WhatsApp message previously showed literal "\n" text instead of line breaks.
 - LIMITATION: WhatsApp links cannot attach images automatically. The customer attaches the screenshot in the chat. Automatic upload/verification needs a backend or WhatsApp Business API.
+
+
+ACCOUNTS + ADMIN UPDATE (NOV 2026)
+- Customer accounts (email + password), order tracking timeline, admin stage updates with customer message,
+  admin price and stock control, customers list. See SETUP-GUIDE.txt in the project root.

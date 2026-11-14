@@ -1,3 +1,4 @@
+(window.CS_READY||Promise.resolve()).then(()=>{
 const products=window.CS_PRODUCTS||[];
 const params=new URLSearchParams(location.search),id=Number(params.get("id"));
 const p=products.find(x=>x.id===id),root=document.getElementById("buyPageContent");
@@ -54,6 +55,7 @@ if(!p){
   </form>
  </div>`;
  const $=id=>document.getElementById(id);
+ if(p.inStock===false){const b=$("productContinue");b.disabled=true;b.innerHTML="Out of stock";b.style.opacity=".55";b.insertAdjacentHTML("beforebegin","<p style=\"color:#d9464e;font-weight:700;margin:10px 0\">This product is currently out of stock. Please check back soon.</p>")}
  const form=$("productOrderForm"),modal=$("pModal"),overlay=$("pOverlay"),pForm=$("pForm");
  const stepMethod=$("pStepMethod"),stepPay=$("pStepPay");
  const chosen=()=>p.plans[Number(document.querySelector('input[name="chosenPlan"]:checked').value)];
@@ -89,13 +91,20 @@ if(!p){
   if(!file){alert("Please upload your payment screenshot first.");return}
   const method=pForm.querySelector('input[name="payment"]:checked');
   const btn=$("pVerify");btn.disabled=true;btn.textContent="Saving your order…";
-  let orderId="";
   try{
-   orderId=await window.CSOrder.submit({name:form.elements.name.value,phone:form.elements.phone.value,product:p.name,plan:chosen()[0],amount:chosen()[1],method:method?method.value:""},file);
-  }catch(err){console.error(err)}
-  const message=`Hello CheapSewa! I have paid and would like you to verify my payment.\n\n${orderId?"Order ID: "+orderId+"\n":""}Name: ${form.elements.name.value}\nPhone: ${form.elements.phone.value}\nProduct: ${p.name}\nPlan: ${chosen()[0]}\nTotal: ${money(chosen()[1])}\nPayment method: ${method?method.value:"-"}\n\nI will attach my payment screenshot here.`;
-  location.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(message);
+   const id=await window.CSOrder.submit({name:form.elements.name.value,phone:form.elements.phone.value,product:p.name,plan:chosen()[0],amount:chosen()[1],productId:p.id,method:method?method.value:""},file);
+   stop();
+   const msg=`Hello CheapSewa! I have paid.\nOrder ID: ${id}\nProduct: ${p.name} (${chosen()[0]})\nTotal: ${money(chosen()[1])}`;
+   const host=document.createElement("div");host.className="cs-done-host";
+   const modalBody=btn.closest("form")||pForm;modalBody.innerHTML="";modalBody.appendChild(host);
+   window.CSOrder.done(host,id,{phone:form.elements.phone.value,wa:"https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg)});
+  }catch(err){
+   console.error(err);btn.disabled=false;btn.innerHTML="Verify payment <span>→</span>";
+   alert((err&&err.message)||"Could not save your order. Please try again.");
+  }
  };
  document.getElementById("mobileCart")?.addEventListener("click",()=>location.href="index.html#shop");
- document.getElementById("mobileLogin")?.addEventListener("click",()=>location.href="index.html#home");
+ document.getElementById("mobileLogin")?.addEventListener("click",()=>location.href="account.html");
 }
+
+});
