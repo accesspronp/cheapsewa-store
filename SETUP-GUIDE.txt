@@ -1,21 +1,45 @@
-CHEAPSEWA - ORDER STORAGE + ADMIN PAGE SETUP
+CHEAPSEWA STORE - SETUP GUIDE (v3)
 
-FOLDER LAYOUT (this matters)
-  package.json, netlify.toml        -> top level of the GitHub repo
-  netlify/functions/*.mjs            -> the backend
-  public/                            -> the website itself (index.html, admin.html, ...)
+1. GITHUB
+   Delete the old files in your repo, then upload these FOUR items together (top level of the repo):
+     package.json   netlify.toml   netlify (folder)   public (folder)
+   Check on GitHub that public/index.html and netlify/functions/admin.mjs exist.
 
-1. GitHub: open your repo, delete the old files, then upload EVERYTHING from this folder
-   (drag in package.json, netlify.toml, and the netlify and public folders).
-2. Netlify: Project configuration -> Environment variables -> Add a variable
-   Key: ADMIN_PASSWORD   Value: a long password (at least 8 characters, 12+ is better)
-3. Netlify will redeploy by itself. If not: Deploys -> Trigger deploy -> Deploy project.
-4. Check Deploys -> Functions: submit-order, admin and cleanup should be listed.
-5. Test: place an order on your site, then open https://yourdomain/admin.html and log in.
+2. NETLIFY - set the admin password (THIS is what makes the admin work)
+   Project configuration > Environment variables > Add variable
+     Key:   ADMIN_PASSWORD
+     Value: your admin password (at least 8 characters)
+     Scopes: all / all contexts.   Tick "Contains secret values".
+   Do NOT write the password in any file. The website files are public, so anyone could read it.
 
-NOTES
-- Screenshots are stored privately; only the admin page can display them.
-- Screenshots are auto-deleted after 60 days (change KEEP_DAYS in netlify/functions/cleanup.mjs).
-- Each phone number can submit 5 orders per hour.
-- Changing the admin password: edit the variable in Netlify and redeploy.
-- Customers are still sent to WhatsApp after the order is saved; if saving fails, they are sent anyway.
+3. NETLIFY - redeploy
+   Deploys > Trigger deploy > Deploy project. Wait for "Published".
+   (Changing an environment variable only takes effect after a new deploy.)
+
+4. Open https://YOUR-SITE.netlify.app/admin.html and sign in.
+   If it fails, the red message under the box tells you exactly why:
+     - "ADMIN_PASSWORD is not set"  -> step 2 + 3
+     - "function not found (404)"   -> the netlify folder is missing from GitHub / wasn't deployed
+     - "Wrong password"             -> retype it exactly
+
+WHERE TO SEE CUSTOMER PAYMENT SCREENSHOTS
+   Admin > Orders > on each order tap "View screenshot".
+   Screenshots are stored privately on the server (Netlify Blobs), visible only to you in the admin,
+   and auto-deleted after 60 days (change KEEP_DAYS in netlify/functions/cleanup.mjs).
+   You can also see raw files in Netlify > Blobs (store name: screenshots).
+
+ADMIN CAN
+   Orders:    view screenshot, change stage, write a message to the customer, delete.
+              Stages: Order received > Verifying payment > Payment approved >
+                      Preparing subscription > Delivered (or Rejected)
+   Products:  change every plan price, mark In stock / Out of stock (live on the site instantly).
+   Customers: see name / email / phone, set a new password if they forget it.
+
+CUSTOMERS
+   /account.html  - create account (email + password) or sign in, then see live order tracking.
+   Guests can track with Order ID + phone number.
+   Passwords are stored as scrypt hashes: nobody (not even you) can read them.
+
+PAYMENT LOGOS
+   Desktop: eSewa, Khalti, Fonepay strip under the menu.
+   Mobile:  Fonepay, eSewa, Khalti and Bank Transfer cards in "Pay your way".
