@@ -11,7 +11,7 @@ if(!p){
  document.title="Buy "+p.name+" | CheapSewa.Store";
  document.getElementById("crumbName").textContent=p.name;
  root.innerHTML=`<div class="buy-layout">
- <div class="buy-art"><div class="buy-art-symbol" style="color:${p.color}">${p.symbol}</div><div class="buy-art-caption">CheapSewa.Store · Premium digital access</div></div>
+ <div class="buy-art"><img class="buy-art-img" src="${p.img}" alt="${p.name}"><div class="buy-art-caption">CheapSewa.Store · Premium digital access</div></div>
  <div class="buy-info"><span class="eyebrow">${p.cat.toUpperCase()}</span><h1>${p.name}</h1>
  <p class="buy-description">${p.desc} Choose your plan, then continue to pay.</p>
  <div class="buy-price-hint">1. Select your subscription plan</div>
