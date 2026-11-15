@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { getStore } from "@netlify/blobs";
 import { sendMail, mailConfigured } from "../lib/mail.mjs";
 import { json, adminOk, adminConfigured, safe, validId, STAGES, ekey, hashPw, clean } from "../lib/lib.mjs";
@@ -35,6 +36,14 @@ export default safe(async (req) => {
         .map((u) => ({ name: u.name, email: u.email, phone: u.phone, createdAt: u.createdAt }));
       return json({ ok: true, users: us.sort((x, y) => y.createdAt.localeCompare(x.createdAt)) });
     }
+    if (a === "reviews") {            // every review of every product, newest first (email shown only here, for moderation)
+      const st = getStore("reviews"), { blobs } = await st.list(), out = [];
+      for (const bl of blobs) {
+        const pidn = Number(String(bl.key).slice(1)), list = (await st.get(bl.key, { type: "json" })) || [];
+        for (const r of list) out.push({ product: pidn, id: r.id, name: r.name, email: r.by === "admin" ? "(added by admin)" : (() => { try { return Buffer.from(String(r.by), "base64url").toString(); } catch { return ""; } })(), custom: r.by === "admin", rating: r.rating, text: r.text, createdAt: r.createdAt });
+      }
+      return json({ ok: true, reviews: out.sort((x, y) => y.createdAt.localeCompare(x.createdAt)).slice(0, 500) });
+    }
     if (a === "status") return json({ ok: true, priceCheck: !!loadBuiltins() });
     if (a === "coupons") return json({ ok: true, coupons: (await getStore("catalog").get("coupons", { type: "json" })) || [] });
     if (a === "image") {
@@ -55,6 +64,26 @@ export default safe(async (req) => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(to)) return json({ ok: false, error: "Enter a valid email address" }, 400);
       try { await sendMail({ to, subject: "CheapSewa.Store test email", text: "Email sending works. Customers can now sign in with email codes." }); return json({ ok: true }); }
       catch (e) { return json({ ok: false, error: "Titan said: " + String((e && e.message) || e).slice(0, 180) }, 502); }
+    }
+    if (b.action === "addReview") {      // admin writes a review with any name, stars, text and date
+      const pidn = Number(b.productId), name = clean(b.name, 60), text = clean(b.text, 500), rating = Math.round(Number(b.rating)), t = new Date(b.createdAt);
+      if (!Number.isInteger(pidn) || pidn < 1 || pidn > 99999) return json({ ok: false, error: "Choose a product" }, 400);
+      if (name.length < 2) return json({ ok: false, error: "Enter the reviewer's name" }, 400);
+      if (!(rating >= 1 && rating <= 5)) return json({ ok: false, error: "Choose 1 to 5 stars" }, 400);
+      if (text.length < 5) return json({ ok: false, error: "Write at least 5 characters" }, 400);
+      if (isNaN(t.getTime()) || t.getTime() > Date.now() + 86400000 || t.getFullYear() < 2015) return json({ ok: false, error: "Date must be in the past" }, 400);
+      const st = getStore("reviews"), list = (await st.get("p" + pidn, { type: "json" })) || [];
+      list.push({ id: randomBytes(6).toString("hex"), by: "admin", name, rating, text, createdAt: t.toISOString() });
+      await st.setJSON("p" + pidn, list.slice(-500));
+      return json({ ok: true });
+    }
+    if (b.action === "deleteReview") {   // remove a bad comment
+      const pidn = Number(b.productId), rid = String(b.reviewId || "");
+      if (!Number.isInteger(pidn) || !/^[a-f0-9]{4,20}$/.test(rid)) return json({ ok: false, error: "Bad request" }, 400);
+      const st = getStore("reviews"), list = (await st.get("p" + pidn, { type: "json" })) || [], left = list.filter((r) => r.id !== rid);
+      if (left.length === list.length) return json({ ok: false, error: "Review not found (maybe already removed)" }, 404);
+      await st.setJSON("p" + pidn, left);
+      return json({ ok: true });
     }
     if (b.action === "setProduct") {
       const pid = Number(b.productId);
