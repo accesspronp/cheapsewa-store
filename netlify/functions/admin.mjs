@@ -1,4 +1,5 @@
 import { getStore } from "@netlify/blobs";
+import { sendMail, mailConfigured } from "../lib/mail.mjs";
 import { json, adminOk, adminConfigured, safe, validId, STAGES, ekey, hashPw } from "../lib/lib.mjs";
 
 export default safe(async (req) => {
@@ -33,6 +34,13 @@ export default safe(async (req) => {
 
   if (req.method === "POST") {
     let b; try { b = await req.json(); } catch { return json({ ok: false, error: "Invalid request" }, 400); }
+    if (b.action === "mailtest") {
+      if (!mailConfigured()) return json({ ok: false, error: "SMTP_USER and SMTP_PASS are not set in Netlify environment variables." }, 400);
+      const to = String(b.to || "").trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(to)) return json({ ok: false, error: "Enter a valid email address" }, 400);
+      try { await sendMail({ to, subject: "CheapSewa.Store test email", text: "Email sending works. Customers can now sign in with email codes." }); return json({ ok: true }); }
+      catch (e) { return json({ ok: false, error: "Titan said: " + String((e && e.message) || e).slice(0, 180) }, 502); }
+    }
     if (b.action === "setProduct") {
       const pid = Number(b.productId);
       if (!Number.isInteger(pid) || pid < 0) return json({ ok: false, error: "Bad product" }, 400);

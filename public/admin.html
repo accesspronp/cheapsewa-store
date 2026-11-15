@@ -30,7 +30,7 @@ button:disabled{opacity:.6;cursor:wait}input[type=number]{font-size:16px}
 </style></head><body>
 <div id="loginBox" class="login"><h1>CheapSewa Admin</h1><p class="muted" style="margin:6px 0 10px">Sign in to manage orders, prices and stock.</p><input id="pw" type="password" placeholder="Admin password" autocomplete="current-password"><button id="loginBtn" style="width:100%;margin-top:8px">Sign in</button><p id="err" class="muted" style="color:#b02a33"></p></div>
 <div id="app" class="wrap" hidden>
- <div class="bar"><h1>CheapSewa Admin</h1><div><button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
+ <div class="bar"><h1>CheapSewa Admin</h1><div><button class="light" id="mailtest">Test email</button> <button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
  <div class="tabs" id="tabs"></div><div id="view"></div>
 </div>
 <script src="products-data.js"></script>
@@ -152,6 +152,6 @@ function renderUsers(){
 }
 $("loginBtn").onclick=function(){pw=$("pw").value;sessionStorage.setItem("csadmin",pw);$("err").textContent="";load()};
 $("pw").onkeydown=function(e){if(e.key==="Enter")$("loginBtn").click()};
-$("refresh").onclick=load;$("logout").onclick=function(){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("pw").value=""};
+$("refresh").onclick=load;$("mailtest").onclick=async function(){var to=prompt("Send a test email to which address?");if(!to)return;var r=await post({action:"mailtest",to:to}),j=await r.json().catch(function(){return{}});alert(r.ok?"Test email sent. Check that inbox (and spam).":(j.error||"Failed ("+r.status+")"))};$("logout").onclick=function(){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("pw").value=""};
 if(pw)load();
 </script></body></html>

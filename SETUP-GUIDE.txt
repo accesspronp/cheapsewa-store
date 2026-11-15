@@ -66,3 +66,16 @@ ADMIN EDITING (v6)
    Admin > Site text: edit the top bar, hero badge/paragraph, shop title/subtitle and help banner. Empty = original text.
    Images you upload are stored on the server (Netlify Blobs store "productimg"), not in GitHub.
    Mobile home page now shows only the scrolling "We accept" bank strip (no payment tiles).
+
+EMAIL CODE SIGN-IN WITH TITAN (v7)
+   Customers can sign in on /account.html with "Email code": they type their email, get a 6-digit code
+   (valid 10 minutes), type it in, and they are in. New emails get an account automatically.
+   Set these in Netlify > Project configuration > Environment variables (then Trigger deploy):
+     SMTP_USER = your full Titan address, e.g. support@yourdomain.com
+     SMTP_PASS = that mailbox's password
+   Optional:
+     SMTP_HOST = smtp.titan.email (default). EU-hosted Titan accounts may need smtp0101.titan.email
+     SMTP_PORT = 465 (default, SSL). 587 also works.
+   Then open /admin.html and press "Test email": it sends you a real email, or shows Titan's exact error.
+   IMPORTANT: upload the new package.json too (it adds the "nodemailer" library; Netlify installs it on deploy).
+   Limits: 1 code per minute per email, 5 per hour per email, 5 wrong tries per code.

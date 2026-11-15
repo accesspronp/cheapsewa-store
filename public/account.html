@@ -7,7 +7,7 @@
 .top a{color:#fff;text-decoration:none;font-weight:700;font-size:15px}.top h1{margin:14px 0 4px;font-size:26px}.top p{margin:0;opacity:.85;font-size:14px}
 .sheet{max-width:520px;margin:-50px auto 40px;padding:0 14px}
 .card{background:#fff;border-radius:20px;padding:20px;box-shadow:0 14px 40px #3a2aa01f;margin-bottom:14px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;background:#eeeaff;border-radius:12px;padding:4px;margin-bottom:16px}
+.tabs{display:grid;grid-template-columns:1.2fr 1fr 1.2fr;background:#eeeaff;border-radius:12px;padding:4px;margin-bottom:16px}
 .tabs button{border:0;background:transparent;padding:11px;border-radius:9px;font-weight:700;font-size:14px;color:#5a5f80}.tabs button.on{background:#fff;color:#5b3df5;box-shadow:0 2px 8px #0001}
 label{display:block;font-size:12px;font-weight:700;color:#4b5170;margin:12px 0 5px}
 input{width:100%;padding:14px;border:1.5px solid #dfe2f0;border-radius:12px;font-size:16px;outline:0}input:focus{border-color:#5b3df5}
@@ -26,11 +26,13 @@ input{width:100%;padding:14px;border:1.5px solid #dfe2f0;border-radius:12px;font
 <div class="top"><a href="index.html">&larr; Back to CheapSewa.Store</a><h1 id="title">Welcome</h1><p id="sub">Sign in to track your orders</p></div>
 <div class="sheet">
  <div class="card" id="authCard">
-  <div class="tabs"><button id="tIn" class="on">Sign in</button><button id="tUp">Create account</button></div>
-  <div id="nameBox" hidden><label>Full name</label><input id="name" autocomplete="name" placeholder="Your name"></div>
+  <div class="tabs"><button id="tCode" class="on">Email code</button><button id="tIn">Password</button><button id="tUp">Sign up</button></div>
+  <div id="nameBox" hidden><label id="nameLbl">Full name</label><input id="name" autocomplete="name" placeholder="Your name"></div>
   <label>Email</label><input id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
-  <label>Password</label><div style="position:relative"><input id="pw" type="password" autocomplete="current-password" placeholder="At least 8 characters" style="padding-right:64px"><button type="button" id="eye" style="position:absolute;right:8px;top:8px;border:0;background:#eeeaff;color:#5b3df5;font-weight:700;font-size:12px;padding:8px 10px;border-radius:9px">Show</button></div>
-  <p class="err" id="err"></p><button class="btn" id="go">Sign in</button><p class="muted" style="text-align:center;margin:12px 0 0">Forgot your password? <a href="https://wa.me/9779716537747" style="color:#5b3df5;font-weight:700">Message us on WhatsApp</a></p>
+  <div id="pwBox" hidden><label>Password</label><div style="position:relative"><input id="pw" type="password" autocomplete="current-password" placeholder="At least 8 characters" style="padding-right:64px"><button type="button" id="eye" style="position:absolute;right:8px;top:8px;border:0;background:#eeeaff;color:#5b3df5;font-weight:700;font-size:12px;padding:8px 10px;border-radius:9px">Show</button></div>
+  </div>
+  <div id="codeBox" hidden><p class="muted" id="sent" style="margin:14px 0 0"></p><label>6-digit code</label><input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="letter-spacing:8px;font-size:24px;text-align:center;font-weight:700"><div class="row" style="margin-top:10px"><button type="button" class="badge" id="rs" style="border:0" disabled>Resend code</button><button type="button" class="badge" id="chg" style="border:0">Change email</button></div></div>
+  <p class="err" id="err"></p><button class="btn" id="go">Email me a code</button><p class="muted" id="forgot" style="text-align:center;margin:12px 0 0" hidden>Forgot your password? Use the <b>Email code</b> tab, or <a href="https://wa.me/9779716537747" style="color:#5b3df5;font-weight:700">message us on WhatsApp</a></p>
  </div>
  <div id="dash" hidden>
   <div class="card row"><div><b id="who"></b><div class="muted" id="mail"></div></div><button class="badge" id="out" style="border:0">Log out</button></div>
@@ -47,19 +49,45 @@ try{tok=localStorage.getItem("cs_token")||""}catch(e){}
 var LABEL={pending:"Order received",verifying:"Verifying your payment",approved:"Payment approved",processing:"Preparing your subscription",delivered:"Delivered"};
 var FLOW=["pending","verifying","approved","processing","delivered"];
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
-function setMode(m){mode=m;$("tIn").className=m==="in"?"on":"";$("tUp").className=m==="up"?"on":"";$("nameBox").hidden=m==="in";$("go").textContent=m==="in"?"Sign in":"Create account";$("pw").autocomplete=m==="in"?"current-password":"new-password";$("err").textContent=""}
-$("tIn").onclick=function(){setMode("in")};$("tUp").onclick=function(){setMode("up")};
+var codeSent=false,cd=null;
+function codeReset(){codeSent=false;$("codeBox").hidden=true;$("email").disabled=false;clearInterval(cd);if(mode==="code")$("go").textContent="Email me a code"}
+function setMode(m){mode=m;codeReset();$("tCode").className=m==="code"?"on":"";$("tIn").className=m==="in"?"on":"";$("tUp").className=m==="up"?"on":"";
+ $("nameBox").hidden=m==="in";$("nameLbl").textContent=m==="code"?"Your name (only if you are new)":"Full name";$("pwBox").hidden=m==="code";$("forgot").hidden=m!=="in";
+ $("go").textContent=m==="code"?"Email me a code":m==="in"?"Sign in":"Create account";$("pw").autocomplete=m==="in"?"current-password":"new-password";$("err").textContent=""}
+$("tCode").onclick=function(){setMode("code")};$("tIn").onclick=function(){setMode("in")};$("tUp").onclick=function(){setMode("up")};
+function tick(n){clearInterval(cd);var b=$("rs");b.disabled=true;b.textContent="Resend in "+n+"s";cd=setInterval(function(){n--;if(n<=0){clearInterval(cd);b.disabled=false;b.textContent="Resend code"}else b.textContent="Resend in "+n+"s"},1000)}
 async function post(path,body,t){var h={"Content-Type":"application/json"};if(t)h.Authorization="Bearer "+t;var r=await fetch(path,{method:"POST",headers:h,body:JSON.stringify(body)});return{ok:r.ok,j:await r.json().catch(function(){return{}})}}
-$("go").onclick=async function(){
+function signedIn(res){tok=res.j.token;try{localStorage.setItem("cs_token",tok)}catch(e){}show(res.j.user)}
+async function sendCode(){
  $("err").textContent="";$("go").disabled=true;
+ var res=await post("/api/auth",{action:"sendCode",email:$("email").value,name:$("name").value});
+ $("go").disabled=false;
+ if(!res.ok||!res.j.ok){$("err").textContent=res.j.error||"Could not send the code";return}
+ codeSent=true;$("codeBox").hidden=false;$("email").disabled=true;$("go").textContent="Verify & sign in";
+ $("sent").textContent="We sent a 6-digit code to "+$("email").value.trim()+". It can take a minute. Check spam too.";$("code").value="";$("code").focus();tick(60);
+}
+$("go").onclick=async function(){
+ $("err").textContent="";
+ if(mode==="code"){
+  if(!codeSent)return sendCode();
+  $("go").disabled=true;
+  var r1=await post("/api/auth",{action:"verifyCode",email:$("email").value,code:$("code").value,name:$("name").value});
+  $("go").disabled=false;
+  if(!r1.ok||!r1.j.ok){$("err").textContent=r1.j.error||"Wrong code";return}
+  return signedIn(r1);
+ }
+ $("go").disabled=true;
  var res=await post("/api/auth",{action:mode==="in"?"login":"register",name:$("name").value,email:$("email").value,password:$("pw").value});
  $("go").disabled=false;
  if(!res.ok||!res.j.ok){$("err").textContent=res.j.error||"Something went wrong";return}
- tok=res.j.token;try{localStorage.setItem("cs_token",tok)}catch(e){}
- show(res.j.user);
+ signedIn(res);
 };
+$("rs").onclick=sendCode;$("chg").onclick=function(){codeReset();$("err").textContent=""};
+$("code").oninput=function(){$("code").value=$("code").value.replace(/\D/g,"").slice(0,6);if($("code").value.length===6&&codeSent)$("go").click()};
+$("email").onkeydown=function(e){if(e.key==="Enter")$("go").click()};
 $("pw").onkeydown=function(e){if(e.key==="Enter")$("go").click()};
 $("eye").onclick=function(){var t=$("pw").type==="password";$("pw").type=t?"text":"password";$("eye").textContent=t?"Hide":"Show"};
+setMode("code");
 function timeline(o){
  var idx=FLOW.indexOf(o.status),h={};(o.history||[]).forEach(function(x){h[x.status]=x.at});
  var rej=o.status==="rejected";
