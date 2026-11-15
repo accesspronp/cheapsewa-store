@@ -50,3 +50,19 @@ IMAGES (v4)
                    5=Netflix 6=Spotify 7=YouTube 8=Canva 9=Adobe 10=Microsoft 365 11=Duolingo 12=Grammarly)
    To change one, replace that file with a new image (any size, ideal ratio 16:10, e.g. 800x500) keeping the same name.
    YouTube (7.jpg) is a placeholder because no YouTube image was supplied.
+
+BANK LOGOS / MARQUEE (v5)
+   Logos live in public/assets/banks/. The "We accept" strip scrolls right to left (pauses on hover).
+   To add a bank: put its logo in that folder and add one <span class="bank-chip"><img src="assets/banks/NAME.webp" alt="Name"></span>
+   inside the .bank-track in public/index.html (both places: top strip and mobile "Pay your way" card).
+   Hero banner is 20% smaller; the green/black/purple pills are in public/index.html (class hero-pill).
+
+ADMIN EDITING (v6)
+   Admin > Products & prices, per product:
+     - Change / crop image : pick a photo, drag + zoom inside the 16:10 frame, Save image (live instantly)
+     - Product name and description
+     - Plans: edit names and prices, remove with X, add "Quick add months" (1-24) or a custom plan
+     - In stock / Out of stock
+   Admin > Site text: edit the top bar, hero badge/paragraph, shop title/subtitle and help banner. Empty = original text.
+   Images you upload are stored on the server (Netlify Blobs store "productimg"), not in GitHub.
+   Mobile home page now shows only the scrolling "We accept" bank strip (no payment tiles).
