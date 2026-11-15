@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5b3df5"><link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png"><link rel="shortcut icon" href="favicon.ico"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><title>My Account | CheapSewa.Store</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f3f1ff;color:#151a30;min-height:100vh}
+.top{background:linear-gradient(135deg,#5b3df5,#7c5cff);color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 70px}
+.top a{color:#fff;text-decoration:none;font-weight:700;font-size:15px}.top h1{margin:14px 0 4px;font-size:26px}.top p{margin:0;opacity:.85;font-size:14px}
+.sheet{max-width:520px;margin:-50px auto 40px;padding:0 14px}
+.card{background:#fff;border-radius:20px;padding:20px;box-shadow:0 14px 40px #3a2aa01f;margin-bottom:14px}
+.tabs{display:grid;grid-template-columns:1.2fr 1fr 1.2fr;background:#eeeaff;border-radius:12px;padding:4px;margin-bottom:16px}
+.tabs button{border:0;background:transparent;padding:11px;border-radius:9px;font-weight:700;font-size:14px;color:#5a5f80}.tabs button.on{background:#fff;color:#5b3df5;box-shadow:0 2px 8px #0001}
+label{display:block;font-size:12px;font-weight:700;color:#4b5170;margin:12px 0 5px}
+input{width:100%;padding:14px;border:1.5px solid #dfe2f0;border-radius:12px;font-size:16px;outline:0}input:focus{border-color:#5b3df5}
+.btn{width:100%;border:0;background:#5b3df5;color:#fff;padding:15px;border-radius:12px;font-weight:700;font-size:16px;margin-top:16px}
+.btn.alt{background:#eeeaff;color:#5b3df5;margin-top:10px}.err{color:#c92a35;font-size:13px;min-height:18px;margin:10px 0 0}
+.muted{color:#6a7190;font-size:13px}.row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:#e3e8ff;color:#3a47b8;white-space:nowrap}
+.badge.delivered{background:#dcf5e8;color:#0b7a4d}.badge.rejected{background:#fde2e4;color:#b02a33}
+.steps{list-style:none;margin:16px 0 4px;padding:0}.steps li{position:relative;padding:0 0 16px 32px;font-size:14px;color:#9097b3}
+.steps li:before{content:"";position:absolute;left:7px;top:18px;bottom:-2px;width:2px;background:#e3e5f2}.steps li:last-child:before{display:none}
+.steps li i{position:absolute;left:0;top:1px;width:16px;height:16px;border-radius:50%;background:#e3e5f2;border:3px solid #fff;box-shadow:0 0 0 1.5px #e3e5f2}
+.steps li.done{color:#151a30;font-weight:600}.steps li.done i{background:#10a56b;box-shadow:0 0 0 1.5px #10a56b}.steps li.done:before{background:#10a56b}
+.steps li.now i{background:#5b3df5;box-shadow:0 0 0 4px #5b3df533}.steps li small{display:block;font-weight:400;color:#7a81a0;font-size:12px}
+.avbig{width:54px;height:54px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #5b3df5;flex:none;background:#eeeaff}
+.note{background:#f3f1ff;border-radius:12px;padding:12px;font-size:14px;margin-top:8px;white-space:pre-wrap}
+</style></head><body>
+<div class="top"><a href="index.html">&larr; Back to CheapSewa.Store</a><h1 id="title">Welcome</h1><p id="sub">Sign in to track your orders</p></div>
+<div class="sheet">
+ <div class="card" id="authCard">
+  <div class="tabs"><button id="tCode" class="on">Email code</button><button id="tIn">Password</button><button id="tUp">Sign up</button></div>
+  <div id="nameBox" hidden><label id="nameLbl">Full name</label><input id="name" autocomplete="name" placeholder="Your name"></div>
+  <label>Email</label><input id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+  <div id="pwBox" hidden><label>Password</label><div style="position:relative"><input id="pw" type="password" autocomplete="current-password" placeholder="At least 8 characters" style="padding-right:64px"><button type="button" id="eye" style="position:absolute;right:8px;top:8px;border:0;background:#eeeaff;color:#5b3df5;font-weight:700;font-size:12px;padding:8px 10px;border-radius:9px">Show</button></div>
+  </div>
+  <div id="codeBox" hidden><p class="muted" id="sent" style="margin:14px 0 0"></p><label>6-digit code</label><input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="letter-spacing:8px;font-size:24px;text-align:center;font-weight:700"><div class="row" style="margin-top:10px"><button type="button" class="badge" id="rs" style="border:0" disabled>Resend code</button><button type="button" class="badge" id="chg" style="border:0">Change email</button></div></div>
+  <p class="err" id="err"></p><button class="btn" id="go">Email me a code</button><p class="muted" id="forgot" style="text-align:center;margin:12px 0 0" hidden>Forgot your password? Use the <b>Email code</b> tab, or <a href="https://wa.me/9779717647043" style="color:#5b3df5;font-weight:700">message us on WhatsApp</a> or email <a href="mailto:support@cheapsewa.store" style="color:#5b3df5;font-weight:700">support@cheapsewa.store</a></p>
+ </div>
+ <div id="dash" hidden>
+  <div class="card"><div class="row" style="align-items:center"><div style="display:flex;gap:12px;align-items:center;min-width:0"><img id="avImg" class="avbig" alt="Profile picture" referrerpolicy="no-referrer"><div style="min-width:0"><b id="who"></b><div class="muted" id="mail" style="overflow:hidden;text-overflow:ellipsis"></div></div></div><button class="badge" id="out" style="border:0">Log out</button></div>
+   <div id="nameView" style="margin-top:12px"><button class="badge" id="editName" style="border:0;font-size:12px">✎ Edit name</button></div>
+   <div id="nameForm" hidden><label>Your name</label><input id="nameEdit" maxlength="80" autocomplete="name"><p class="err" id="nameErr"></p><div class="row" style="gap:8px"><button class="btn" id="saveName" style="margin:0">Save name</button><button class="btn alt" id="cancelName" style="margin:0">Cancel</button></div></div></div>
+  <div id="orders"></div>
+  <button class="btn alt" id="reload">Refresh orders</button>
+ </div>
+ <div class="card" id="guest"><b>Track without an account</b><p class="muted">Enter the Order ID shown after you paid and the phone number you used.</p>
+  <label>Order ID</label><input id="gid" placeholder="e.g. 1763200000000-ab12cd"><label>Phone number</label><input id="gph" inputmode="tel" placeholder="98XXXXXXXX">
+  <p class="err" id="gerr"></p><button class="btn alt" id="gtrack">Track order</button><div id="gres"></div></div>
+</div>
+<script>
+var $=function(i){return document.getElementById(i)},mode="in",tok="";
+try{tok=localStorage.getItem("cs_token")||""}catch(e){}
+var LABEL={pending:"Order received",verifying:"Verifying your payment",approved:"Payment approved",processing:"Preparing your subscription",delivered:"Delivered"};
+var FLOW=["pending","verifying","approved","processing","delivered"];
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+var codeSent=false,cd=null;
+function codeReset(){codeSent=false;$("codeBox").hidden=true;$("email").disabled=false;clearInterval(cd);if(mode==="code")$("go").textContent="Email me a code"}
+function setMode(m){mode=m;codeReset();$("tCode").className=m==="code"?"on":"";$("tIn").className=m==="in"?"on":"";$("tUp").className=m==="up"?"on":"";
+ $("nameBox").hidden=m==="in";$("nameLbl").textContent=m==="code"?"Your name (only if you are new)":"Full name";$("pwBox").hidden=m==="code";$("forgot").hidden=m!=="in";
+ $("go").textContent=m==="code"?"Email me a code":m==="in"?"Sign in":"Create account";$("pw").autocomplete=m==="in"?"current-password":"new-password";$("err").textContent=""}
+$("tCode").onclick=function(){setMode("code")};$("tIn").onclick=function(){setMode("in")};$("tUp").onclick=function(){setMode("up")};
+function tick(n){clearInterval(cd);var b=$("rs");b.disabled=true;b.textContent="Resend in "+n+"s";cd=setInterval(function(){n--;if(n<=0){clearInterval(cd);b.disabled=false;b.textContent="Resend code"}else b.textContent="Resend in "+n+"s"},1000)}
+async function post(path,body,t){var h={"Content-Type":"application/json"};if(t)h.Authorization="Bearer "+t;var r=await fetch(path,{method:"POST",headers:h,body:JSON.stringify(body)});return{ok:r.ok,status:r.status,j:await r.json().catch(function(){return{}})}}
+function signedIn(res){tok=res.j.token;try{localStorage.setItem("cs_token",tok);localStorage.setItem("cs_user",JSON.stringify(res.j.user));sessionStorage.setItem("cs_greet","1")}catch(e){}$("go").disabled=true;$("err").style.color="#0b7a4d";$("err").textContent="Signed in! Taking you to the home page…";location.replace("index.html")}
+async function sendCode(){
+ $("err").textContent="";$("go").disabled=true;
+ var res=await post("/api/auth",{action:"sendCode",email:$("email").value,name:$("name").value});
+ $("go").disabled=false;
+ if(!res.ok||!res.j.ok){$("err").textContent=res.j.error||"Could not send the code";return}
+ codeSent=true;$("codeBox").hidden=false;$("email").disabled=true;$("go").textContent="Verify & sign in";
+ $("sent").textContent="We sent a 6-digit code to "+$("email").value.trim()+". It can take a minute. Check spam too.";$("code").value="";$("code").focus();tick(60);
+}
+$("go").onclick=async function(){
+ $("err").textContent="";
+ if(mode==="code"){
+  if(!codeSent)return sendCode();
+  $("go").disabled=true;
+  var r1=await post("/api/auth",{action:"verifyCode",email:$("email").value,code:$("code").value,name:$("name").value});
+  $("go").disabled=false;
+  if(!r1.ok||!r1.j.ok){$("err").textContent=r1.j.error||"Wrong code";return}
+  return signedIn(r1);
+ }
+ $("go").disabled=true;
+ var res=await post("/api/auth",{action:mode==="in"?"login":"register",name:$("name").value,email:$("email").value,password:$("pw").value});
+ $("go").disabled=false;
+ if(!res.ok||!res.j.ok){$("err").textContent=res.j.error||"Something went wrong";return}
+ signedIn(res);
+};
+$("rs").onclick=sendCode;$("chg").onclick=function(){codeReset();$("err").textContent=""};
+$("code").oninput=function(){$("code").value=$("code").value.replace(/\D/g,"").slice(0,6);if($("code").value.length===6&&codeSent)$("go").click()};
+$("email").onkeydown=function(e){if(e.key==="Enter")$("go").click()};
+$("pw").onkeydown=function(e){if(e.key==="Enter")$("go").click()};
+$("eye").onclick=function(){var t=$("pw").type==="password";$("pw").type=t?"text":"password";$("eye").textContent=t?"Hide":"Show"};
+setMode("code");
+function timeline(o){
+ var idx=FLOW.indexOf(o.status),h={};(o.history||[]).forEach(function(x){h[x.status]=x.at});
+ var rej=o.status==="rejected";
+ var steps=FLOW.map(function(s,i){var cls=rej?(h[s]?"done":""):(i<idx?"done":i===idx?"done now":"");return'<li class="'+cls+'"><i></i>'+LABEL[s]+(h[s]?'<small>'+new Date(h[s]).toLocaleString()+'</small>':'')+'</li>'}).join("");
+ return'<ul class="steps">'+steps+'</ul>'+(rej?'<div class="note" style="background:#fde2e4">This order was rejected. Please contact us on WhatsApp.</div>':'')+(o.note?'<div class="note"><b>Message from CheapSewa</b>\n'+esc(o.note)+'</div>':'');
+}
+function card(o){return'<div class="card"><div class="row"><div><b>'+esc(o.product)+'</b><div class="muted">'+esc(o.plan)+' · NPR '+Number(o.amount).toLocaleString("en-IN")+' · '+esc(o.method)+'</div></div><span class="badge '+esc(o.status)+'">'+esc(LABEL[o.status]||o.status)+'</span></div>'+timeline(o)+'<div class="muted">Order ID: '+esc(o.id)+'</div></div>'}
+async function loadOrders(){
+ var r=await fetch("/api/my-orders",{headers:{Authorization:"Bearer "+tok}}),j=await r.json().catch(function(){return{}});
+ if(r.status===401||!j.ok){$("orders").innerHTML='<div class="card muted">No orders found yet.</div>';return}
+ $("orders").innerHTML=j.orders.length?j.orders.map(card).join(""):'<div class="card muted">No orders yet. Your orders will appear here after you pay.</div>';
+}
+var AV="https://static.vecteezy.com/system/resources/previews/075/165/253/non_2x/smiling-male-profile-portrait-in-circle-frame-happy-person-avatar-cartoon-style-vector.jpg",AVF="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#e6e0ff"/><circle cx="50" cy="38" r="18" fill="#5b3df5"/><path d="M14 100c2-24 18-36 36-36s34 12 36 36z" fill="#5b3df5"/></svg>');
+function show(u){try{localStorage.setItem("cs_user",JSON.stringify(u))}catch(e){}var im=$("avImg");im.onerror=function(){im.onerror=null;im.src=AVF};im.src=AV;$("authCard").hidden=true;$("dash").hidden=false;$("title").textContent="Hi, "+u.name.split(" ")[0];$("sub").textContent="Track your orders below";$("who").textContent=u.name;$("mail").textContent=u.email;loadOrders()}
+$("reload").onclick=loadOrders;
+$("editName").onclick=function(){$("nameView").hidden=true;$("nameForm").hidden=false;$("nameEdit").value=$("who").textContent;$("nameEdit").focus()};
+$("cancelName").onclick=function(){$("nameForm").hidden=true;$("nameView").hidden=false;$("nameErr").textContent=""};
+$("saveName").onclick=async function(){var v=$("nameEdit").value.trim();if(v.length<2){$("nameErr").textContent="Enter at least 2 characters";return}
+ $("saveName").disabled=true;var r=await post("/api/auth",{action:"updateName",name:v},tok);$("saveName").disabled=false;
+ if(!r.ok||!r.j.ok){$("nameErr").textContent=r.j.error||"Could not save your name";return}
+ $("nameErr").textContent="";$("nameForm").hidden=true;$("nameView").hidden=false;show(r.j.user)};
+$("out").onclick=function(){try{localStorage.removeItem("cs_token");localStorage.removeItem("cs_user")}catch(e){}tok="";location.reload()};
+$("gtrack").onclick=async function(){
+ $("gerr").textContent="";$("gres").innerHTML="";
+ var r=await fetch("/api/my-orders?id="+encodeURIComponent($("gid").value.trim())+"&phone="+encodeURIComponent($("gph").value.trim())),j=await r.json().catch(function(){return{}});
+ if(!r.ok||!j.ok){$("gerr").textContent=j.error||"Order not found";return}
+ $("gres").innerHTML=j.orders.map(card).join("");
+};
+(function(){var q=new URLSearchParams(location.search),id=q.get("id"),ph=q.get("phone");
+ if(!id){try{var l=JSON.parse(localStorage.getItem("cs_last")||"null");if(l&&l.id){id=l.id;ph=l.phone}}catch(e){}}
+ if(id){$("gid").value=id;$("gph").value=ph||"";if(ph&&q.get("id")){setTimeout(function(){$("gtrack").click();$("guest").scrollIntoView({behavior:"smooth"})},300)}}})();
+(async function(){if(!tok)return;var res=await post("/api/auth",{action:"me"},tok);if(res.ok&&res.j.ok)show(res.j.user);else if(res.status===401){try{localStorage.removeItem("cs_token");localStorage.removeItem("cs_user")}catch(e){}}})();
+</script></body></html>

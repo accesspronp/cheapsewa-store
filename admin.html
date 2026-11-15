@@ -1,60 +1,198 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>CheapSewa Admin</title>
+<meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png"><link rel="shortcut icon" href="favicon.ico"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><title>CheapSewa Admin</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f5f6fb;color:#151a30}
-.wrap{max-width:980px;margin:0 auto;padding:20px}h1{font-size:22px;margin:0}
-.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}h1{font-size:21px;margin:0}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .login{max-width:340px;margin:90px auto;background:#fff;padding:26px;border-radius:16px;box-shadow:0 10px 30px #1a1f4a14}
-input,select{width:100%;padding:11px 12px;border:1px solid #dde1ee;border-radius:10px;font-size:14px;margin:10px 0}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #dde1ee;border-radius:10px;font-size:14px;margin:6px 0;font-family:inherit}
 button{border:0;border-radius:10px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px;background:#5b3df5;color:#fff}
 button.light{background:#eef0fa;color:#33395c}button.green{background:#10a56b}button.red{background:#d9464e}
 .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 4px 16px #1a1f4a0d}
-.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.muted{color:#6a7190;font-size:13px}
-.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
-.pending{background:#fff3d6;color:#8a5a00}.approved{background:#dcf5e8;color:#0b7a4d}.rejected{background:#fde2e4;color:#b02a33}.delivered{background:#e3e8ff;color:#3a47b8}
+.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}.muted{color:#6a7190;font-size:13px}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#e3e8ff;color:#3a47b8}
+.tag.pending{background:#fff3d6;color:#8a5a00}.tag.approved,.tag.delivered{background:#dcf5e8;color:#0b7a4d}.tag.rejected{background:#fde2e4;color:#b02a33}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}img.shot{max-width:100%;max-height:520px;margin-top:12px;border-radius:10px;border:1px solid #e3e6f2}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.plans{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.plans label{font-size:12px;color:#6a7190;font-weight:600}
+.bar h1{background:linear-gradient(135deg,#5b3df5,#10a56b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag.verifying{background:#e0ecff;color:#1f55b8}.tag.processing{background:#efe5ff;color:#6a35c9}
+button:disabled{opacity:.6;cursor:wait}input[type=number]{font-size:16px}
+@media(max-width:560px){.wrap{padding:12px}.acts button,.acts select{flex:1 1 40%}.login{margin:40px 14px}}
+.lb{display:block;font-size:12px;font-weight:700;color:#6a7190;margin-top:10px}
+.pimg{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.pimg img{width:160px;aspect-ratio:16/10;object-fit:cover;border-radius:10px;border:1px solid #e3e6f2}
+.pimg>div{display:flex;gap:8px;flex-wrap:wrap}
+.prow{display:grid;grid-template-columns:1fr 92px 92px 108px 40px;gap:8px;align-items:center}.prow input,.prow select{margin:3px 0}
+.phead{display:grid;grid-template-columns:1fr 92px 92px 108px 40px;gap:8px;font-size:11px;font-weight:700;color:#6a7190;margin-top:8px}
+.tag.on{background:#dcf5e8;color:#0b7a4d}.tag.off{background:#fde2e4;color:#b02a33}.tag.hid{background:#eceef7;color:#5b6180}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.crow{display:grid;grid-template-columns:1fr 110px 120px 40px;gap:8px;align-items:center}
+.card.is-hidden{opacity:.72;border:1px dashed #b9bfd8}
+.mbg{position:fixed;inset:0;background:#10172b99;display:grid;place-items:center;z-index:50;padding:12px;overflow:auto}
+.mbox{background:#fff;border-radius:16px;padding:16px;width:min(560px,100%)}.mbox canvas{width:100%;aspect-ratio:16/10;border-radius:10px;border:1px solid #dde1ee;margin-top:8px;cursor:grab;background:#eef0fa}
+@media(max-width:560px){.prow{grid-template-columns:1fr 1fr 40px}.prow [data-pl]{grid-column:1/-1}.phead{display:none}.pimg img{width:100%}.two{grid-template-columns:1fr}.crow{grid-template-columns:1fr 1fr 40px}.crow [data-cc]{grid-column:1/-1}}
 </style></head><body>
-<div id="loginBox" class="login"><h1>Admin login</h1><input id="pw" type="password" placeholder="Admin password" autocomplete="current-password"><button id="loginBtn" style="width:100%">Sign in</button><p id="err" class="muted" style="color:#b02a33"></p></div>
+<div id="loginBox" class="login"><h1>CheapSewa Admin</h1><p class="muted" style="margin:6px 0 10px">Sign in to manage orders, prices and stock.</p><input id="pw" type="password" placeholder="Admin password" autocomplete="current-password"><button id="loginBtn" style="width:100%;margin-top:8px">Sign in</button><p id="err" class="muted" style="color:#b02a33"></p></div>
 <div id="app" class="wrap" hidden>
- <div class="bar"><h1>Orders</h1><div><button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
- <div class="filters" id="filters"></div><div id="list"></div>
+ <div class="bar"><h1>CheapSewa Admin</h1><div><span class="tag" id="pcheck" title="Server double-checks prices at checkout"></span> <button class="light" id="mailtest">Test email</button> <button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
+ <div class="tabs" id="tabs"></div><div id="view"></div>
 </div>
+<script src="products-data.js?v=9"></script>
 <script>
-var pw=sessionStorage.getItem("csadmin")||"",orders=[],filter="all";
-var $=function(id){return document.getElementById(id)};
-function api(path,opt){opt=opt||{};opt.headers=Object.assign({"x-admin-password":pw},opt.headers||{});return fetch("/api/admin"+path,opt)}
+var pw=sessionStorage.getItem("csadmin")||"",orders=[],users=[],ov={},custom={},coupons=[],priceCheck=null,tab="orders",filter="all";
+var STAGES=["pending","verifying","approved","processing","delivered","rejected"];
+var NAMES={pending:"Order received",verifying:"Verifying payment",approved:"Payment approved",processing:"Preparing subscription",delivered:"Delivered",rejected:"Rejected"};
+var $=function(i){return document.getElementById(i)};
+function api(p,o){o=o||{};o.headers=Object.assign({"x-admin-password":pw},o.headers||{});return fetch("/api/admin"+p,o)}
+function post(b){return api("",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)})}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+async function diagnose(){
+ try{
+  var r=await fetch("/api/admin?action=ping",{cache:"no-store"});
+  if(r.status===404)return"The admin server function was not found (404). The netlify folder was not deployed. Re-upload the whole project to GitHub (package.json, netlify.toml, netlify folder, public folder) and redeploy.";
+  var j=await r.json();
+  if(j&&j.configured===false)return"ADMIN_PASSWORD is not set on the server (or is shorter than 8 characters). In Netlify: Project configuration > Environment variables > add ADMIN_PASSWORD, then Deploys > Trigger deploy.";
+  return"Wrong password. Type it again exactly as saved in Netlify ADMIN_PASSWORD.";
+ }catch(e){return"Cannot reach the server. This page must be opened from your live Netlify site (https://yoursite.netlify.app/admin.html), not from a file or another host."}
+}
+function showLogin(msg){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("err").textContent=msg||""}
 async function load(){
- var r=await api("?action=list");
- if(r.status===401){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("err").textContent="Wrong password";return}
- var j=await r.json();orders=j.orders||[];$("loginBox").hidden=true;$("app").hidden=false;render();
+ $("err").textContent="";$("loginBtn").disabled=true;
+ try{
+  var r=await api("?action=list");
+  if(r.status===401){showLogin(await diagnose());return}
+  var j=await r.json().catch(function(){return null});
+  if(!r.ok||!j||!j.ok){showLogin("Server problem ("+r.status+"): "+((j&&j.error)||"no response")+". Check Netlify > Logs > Functions.");return}
+  orders=j.orders||[];
+  var u=await api("?action=users");users=((await u.json().catch(function(){return{}})).users)||[];
+  var c=await fetch("/api/catalog",{cache:"no-store"});var cj=await c.json().catch(function(){return{}});ov=cj.overrides||{};texts=cj.texts||{};custom=cj.custom||{};
+  var st=await api("?action=status");priceCheck=((await st.json().catch(function(){return{}})).priceCheck);
+  var cp=await api("?action=coupons");coupons=((await cp.json().catch(function(){return{}})).coupons)||[];
+  $("loginBox").hidden=true;$("app").hidden=false;var pc=$("pcheck");pc.className="tag "+(priceCheck?"on":"off");pc.textContent=priceCheck?"Server price check: ON":"Server price check: OFF";render();
+ }catch(e){showLogin("Network error: "+e.message)}
+ finally{$("loginBtn").disabled=false}
 }
+var texts={};
 function render(){
- var st=["all","pending","approved","rejected","delivered"];
- $("filters").innerHTML=st.map(function(s){var n=s==="all"?orders.length:orders.filter(function(o){return o.status===s}).length;return '<button class="'+(s===filter?"":"light")+'" data-f="'+s+'">'+s[0].toUpperCase()+s.slice(1)+" ("+n+")</button>"}).join("");
- $("filters").querySelectorAll("button").forEach(function(b){b.onclick=function(){filter=b.dataset.f;render()}});
- var list=orders.filter(function(o){return filter==="all"||o.status===filter});
- $("list").innerHTML=list.length?list.map(function(o){return '<div class="card" data-id="'+esc(o.id)+'"><div class="row"><b>'+esc(o.product)+'</b><span class="tag '+esc(o.status)+'">'+esc(o.status)+'</span></div>'+
-  '<div class="muted">'+esc(o.plan)+' · NPR '+Number(o.amount).toLocaleString("en-IN")+' · '+esc(o.method)+'</div>'+
-  '<div style="margin-top:6px">'+esc(o.name)+' · <a href="https://wa.me/'+esc(String(o.phone).replace(/^\+/,""))+'" target="_blank" rel="noopener">'+esc(o.phone)+'</a></div>'+
-  '<div class="muted">'+new Date(o.createdAt).toLocaleString()+' · ID '+esc(o.id)+'</div>'+
-  '<div class="acts">'+(o.hasImage?'<button class="light" data-a="shot">View screenshot</button>':'<span class="muted">Screenshot deleted</span>')+
-  '<button class="green" data-a="approved">Approve</button><button class="red" data-a="rejected">Reject</button><button data-a="delivered">Mark delivered</button><button class="light" data-a="delete">Delete</button></div><div class="shotbox"></div></div>'}).join(""):'<p class="muted">No orders here yet.</p>';
- $("list").querySelectorAll(".card").forEach(function(card){card.querySelectorAll("button[data-a]").forEach(function(b){b.onclick=function(){act(card,b.dataset.a)}})});
+ $("tabs").innerHTML=[["orders","Orders ("+orders.length+")"],["products","Products & prices"],["coupons","Coupons ("+coupons.length+")"],["texts","Site text"],["users","Customers ("+users.length+")"]].map(function(t){return'<button class="'+(tab===t[0]?"":"light")+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join("");
+ $("tabs").querySelectorAll("button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;render()}});
+ if(tab==="orders")renderOrders();else if(tab==="products")renderProducts();else if(tab==="coupons")renderCoupons();else if(tab==="texts")renderTexts();else renderUsers();
 }
-async function act(card,a){
- var id=card.dataset.id;
- if(a==="shot"){var r=await api("?action=image&id="+encodeURIComponent(id));if(!r.ok){alert("Screenshot not available");return}var u=URL.createObjectURL(await r.blob());card.querySelector(".shotbox").innerHTML='<img class="shot" src="'+u+'" alt="Payment screenshot">';return}
- if(a==="delete"&&!confirm("Delete this order and its screenshot permanently?"))return;
- var body=a==="delete"?{action:"delete",id:id}:{action:"status",id:id,status:a};
- var r2=await api("",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
- if(!r2.ok){alert("Could not update");return}
+function renderOrders(){
+ var f=["all"].concat(STAGES),h='<div class="tabs">'+f.map(function(s){var n=s==="all"?orders.length:orders.filter(function(o){return o.status===s}).length;return'<button class="'+(s===filter?"":"light")+'" data-f="'+s+'">'+(NAMES[s]||"All")+" ("+n+")</button>"}).join("")+"</div>";
+ var list=orders.filter(function(o){return filter==="all"||o.status===filter});
+ h+=list.length?list.map(function(o){return'<div class="card" data-id="'+esc(o.id)+'"><div class="row"><b>'+esc(o.product)+'</b><span class="tag '+esc(o.status)+'">'+esc(NAMES[o.status]||o.status)+'</span></div>'+
+ '<div class="muted">'+esc(o.plan)+' · NPR '+Number(o.amount).toLocaleString("en-IN")+' · '+esc(o.method)+'</div>'+(o.coupon?'<div class="muted">Coupon <b>'+esc(o.coupon)+'</b> · discount NPR '+Number(o.discount||0).toLocaleString("en-IN")+'</div>':'')+(o.clientAmount!=null?'<div class="muted" style="color:#b02a33;font-weight:700">Check: the customer\'s page showed NPR '+Number(o.clientAmount).toLocaleString("en-IN")+' but the real price is NPR '+Number(o.amount).toLocaleString("en-IN")+'</div>':'')+
+ '<div style="margin-top:6px">'+esc(o.name)+' · <a href="https://wa.me/'+esc(String(o.phone).replace(/^\+/,""))+'" target="_blank" rel="noopener">'+esc(o.phone)+'</a>'+(o.userEmail?' · '+esc(o.userEmail):'')+'</div>'+
+ '<div class="muted">'+new Date(o.createdAt).toLocaleString()+' · ID '+esc(o.id)+'</div>'+
+ '<div class="acts">'+(o.hasImage?'<button class="light" data-a="shot">View screenshot</button>':'<span class="muted">Screenshot deleted</span>')+'<button class="red" data-a="delete">Delete</button></div>'+
+ '<div class="acts" style="align-items:center"><select data-s style="width:auto;margin:0">'+STAGES.map(function(s){return'<option value="'+s+'"'+(s===o.status?" selected":"")+'>'+NAMES[s]+'</option>'}).join("")+'</select><button class="green" data-a="save">Update order</button></div>'+
+ '<textarea data-n rows="2" placeholder="Message shown to the customer (e.g. login details or delivery info)">'+esc(o.note||"")+'</textarea><div class="shotbox"></div></div>'}).join(""):'<p class="muted">No orders here yet.</p>';
+ $("view").innerHTML=h;
+ $("view").querySelectorAll("[data-f]").forEach(function(b){b.onclick=function(){filter=b.dataset.f;render()}});
+ $("view").querySelectorAll(".card[data-id]").forEach(function(c){c.querySelectorAll("button[data-a]").forEach(function(b){b.onclick=function(){act(c,b.dataset.a)}})});
+}
+async function act(c,a){
+ var id=c.dataset.id;
+ if(a==="shot"){var r=await api("?action=image&id="+encodeURIComponent(id));if(!r.ok){alert("Screenshot not available");return}c.querySelector(".shotbox").innerHTML='<img class="shot" src="'+URL.createObjectURL(await r.blob())+'" alt="Payment screenshot">';return}
+ if(a==="delete"){if(!confirm("Delete this order and its screenshot permanently?"))return;await post({action:"delete",id:id});return load()}
+ var r2=await post({action:"status",id:id,status:c.querySelector("[data-s]").value,note:c.querySelector("[data-n]").value});
+ if(!r2.ok){alert("Could not update ("+r2.status+")");return}
  await load();
+}
+var NOIMG="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500"><rect width="800" height="500" fill="#e9ecf8"/><text x="400" y="270" font-family="Arial" font-size="46" fill="#8a91b3" text-anchor="middle">No image yet</text></svg>');
+var CATS=["AI & Productivity","Streaming","Software","Education","Design"];
+function allProducts(){var b=(window.CS_PRODUCTS||[]).slice();Object.keys(custom).forEach(function(k){var c=custom[k];b.push({id:Number(c.id),img:"",name:c.name,cat:c.cat,desc:c.desc,plans:c.plans,custom:true})});return b}
+function effPlans(p,o){var base=(o.plans&&o.plans.length)?o.plans:p.plans.map(function(pl,i){return[pl[0],o.prices&&o.prices[i]!=null?o.prices[i]:pl[1],pl[2]||0,pl[3]]});return base.map(function(x){return[x[0],x[1],Number(x[2])||0,(x[3]===0||x[3]===false)?0:1]})}
+function planRow(l,pr,sale,ok){return'<div class="prow"><input data-pl placeholder="Plan name e.g. 2 Months" value="'+esc(l)+'"><input type="number" min="0" data-pp placeholder="Price" value="'+Number(pr)+'"><input type="number" min="0" data-ps placeholder="Sale price" value="'+(Number(sale)>0?Number(sale):"")+'"><select data-pk><option value="1"'+(ok===0?"":" selected")+'>In stock</option><option value="0"'+(ok===0?" selected":"")+'>Out of stock</option></select><button type="button" class="red" data-del title="Remove plan">&#10005;</button></div>'}
+function bindRows(c){c.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){if(c.querySelectorAll(".prow").length<2){alert("A product needs at least one plan.");return}b.parentNode.remove()}})}
+function catOpts(sel){return CATS.map(function(x){return'<option'+(x===sel?" selected":"")+'>'+esc(x)+'</option>'}).join("")}
+function readPlans(c){return[].map.call(c.querySelectorAll(".prow"),function(r){return{label:r.querySelector("[data-pl]").value,price:Number(r.querySelector("[data-pp]").value),sale:Number(r.querySelector("[data-ps]").value)||0,inStock:r.querySelector("[data-pk]").value==="1"}})}
+function renderProducts(){
+ var h='<div class="card"><div class="row"><b>Add a new product</b><button type="button" id="npToggle">+ Add product</button></div><div id="npForm" hidden>'+
+  '<label class="lb">Product name</label><input id="npName" maxlength="60" placeholder="e.g. Midjourney">'+
+  '<div class="two"><div><label class="lb">Category</label><select id="npCat">'+catOpts("AI & Productivity")+'</select></div><div><label class="lb">First plan name</label><input id="npPlan" maxlength="40" placeholder="e.g. 1 Month"></div></div>'+
+  '<div class="two"><div><label class="lb">Price (NPR)</label><input id="npPrice" type="number" min="0" placeholder="e.g. 1500"></div><div></div></div>'+
+  '<label class="lb">Description</label><textarea id="npDesc" rows="2" maxlength="220" placeholder="One or two lines shown on the card"></textarea>'+
+  '<div class="acts"><button id="npSave" class="green">Create product</button> <span class="muted" id="npMsg">You can add more plans, a sale price, and an image right after creating it.</span></div></div></div>';
+ h+=allProducts().map(function(p){var o=ov[p.id]||{};var oos=o.inStock===false,hid=o.hidden===true;var img=o.img||p.img||NOIMG;
+  return'<div class="card'+(hid?" is-hidden":"")+'" data-p="'+p.id+'"><div class="row" style="margin-bottom:8px"><b>#'+p.id+(p.custom?' · added by you':'')+'</b><span>'+(hid?'<span class="tag hid">Hidden from shop</span> ':'')+(oos?'<span class="tag off">Out of stock</span>':'<span class="tag on">Live</span>')+'</span></div>'+
+  '<div class="pimg"><img src="'+esc(img)+'" alt=""><div><button type="button" class="light" data-img>Change / crop image</button> <button type="button" class="light" data-imgreset>'+(p.custom?"Remove image":"Original image")+'</button></div></div>'+
+  '<label class="lb">Product name</label><input data-name maxlength="60" value="'+esc(o.name||p.name)+'">'+
+  '<div class="two"><div><label class="lb">Category</label><select data-cat>'+catOpts(o.cat||p.cat)+'</select></div><div><label class="lb">Offer label on the card (optional)</label><input data-badge maxlength="24" placeholder="e.g. Special offer" value="'+esc(o.badge||"")+'"></div></div>'+
+  '<label class="lb">Description (shown on the card)</label><textarea data-desc rows="2" maxlength="220">'+esc(o.desc||p.desc)+'</textarea>'+
+  '<div class="two"><div><label class="lb">Whole product stock</label><select data-stock><option value="1"'+(oos?"":" selected")+'>In stock</option><option value="0"'+(oos?" selected":"")+'>Out of stock (all plans)</option></select></div><div><label class="lb">Shown in shop?</label><select data-hid><option value="0"'+(hid?"":" selected")+'>Shown</option><option value="1"'+(hid?" selected":"")+'>Hidden (removed from shop)</option></select></div></div>'+
+  '<div class="row" style="margin-top:12px"><label class="lb" style="margin:0">Plans, months &amp; prices (NPR)</label></div>'+
+  '<div class="phead"><span>Plan / months</span><span>Price</span><span>Sale price</span><span>Stock</span><span></span></div>'+
+  '<div data-rows>'+effPlans(p,o).map(function(pl){return planRow(pl[0],pl[1],pl[2],pl[3])}).join("")+'</div>'+
+  '<div class="acts" style="margin-top:8px"><select data-quick style="width:auto;margin:0"><option value="">+ Quick add months…</option>'+[1,2,3,4,5,6,9,12,24].map(function(n){return'<option value="'+n+'">'+n+(n===1?" Month":" Months")+'</option>'}).join("")+'</select><button type="button" class="light" data-add>+ Custom plan</button><button type="button" class="light" data-disc>% Discount on all plans</button></div>'+
+  '<p class="muted" style="margin:6px 0 0">Sale price = what customers pay (the normal price is shown crossed out). Leave it empty for no discount.</p>'+
+  '<div class="acts"><button data-save>Save product</button>'+(p.custom?' <button class="red" data-delprod>Delete product</button>':'')+' <span class="muted" data-msg></span></div></div>'}).join("");
+ $("view").innerHTML=h;
+ $("npToggle").onclick=function(){$("npForm").hidden=!$("npForm").hidden};
+ $("npSave").onclick=async function(){
+  var body={action:"addProduct",name:$("npName").value,cat:$("npCat").value,desc:$("npDesc").value,plans:[{label:$("npPlan").value,price:Number($("npPrice").value),sale:0,inStock:true}]};
+  var r=await post(body),j=await r.json().catch(function(){return{}});
+  if(!r.ok){$("npMsg").textContent=j.error||("Could not create ("+r.status+")");return}
+  await load();tab="products";render();var c=document.querySelector('[data-p="'+j.product.id+'"]');if(c)c.scrollIntoView({behavior:"smooth"})};
+ $("view").querySelectorAll("[data-p]").forEach(function(c){
+  var pid=Number(c.dataset.p);bindRows(c);
+  c.querySelector("[data-add]").onclick=function(){c.querySelector("[data-rows]").insertAdjacentHTML("beforeend",planRow("",0,0,1));bindRows(c)};
+  c.querySelector("[data-quick]").onchange=function(e){var n=e.target.value;if(!n)return;c.querySelector("[data-rows]").insertAdjacentHTML("beforeend",planRow(n+(n==="1"?" Month":" Months"),0,0,1));e.target.value="";bindRows(c)};
+  c.querySelector("[data-disc]").onclick=function(){var v=prompt("Discount % for every plan of this product (1-90). Enter 0 to remove all sale prices:");if(v===null)return;var d=Number(v);if(!(d>=0&&d<=90)){alert("Enter a number from 0 to 90");return}c.querySelectorAll(".prow").forEach(function(r){var pr=Number(r.querySelector("[data-pp]").value)||0;r.querySelector("[data-ps]").value=d>0?Math.round(pr*(100-d)/100):""});c.querySelector("[data-msg]").textContent="Sale prices filled in. Press Save product."};
+  c.querySelector("[data-img]").onclick=function(){openCrop(pid,function(url){ov[pid]=Object.assign({},ov[pid]||{},{img:url});c.querySelector(".pimg img").src=url})};
+  c.querySelector("[data-imgreset]").onclick=async function(){if(!confirm("Go back to the original image?"))return;var r=await post({action:"resetImage",productId:pid});if(r.ok){var o2=Object.assign({},ov[pid]||{});delete o2.img;ov[pid]=o2;var pr=allProducts().filter(function(x){return x.id===pid})[0];c.querySelector(".pimg img").src=(pr&&pr.img)||NOIMG}else alert("Failed ("+r.status+")")};
+  var dp=c.querySelector("[data-delprod]");if(dp)dp.onclick=async function(){if(!confirm("Delete this product permanently? (Use 'Hidden' if you only want it off the shop for now.)"))return;var r=await post({action:"deleteProduct",productId:pid}),j=await r.json().catch(function(){return{}});if(!r.ok){alert(j.error||"Failed");return}await load();tab="products";render()};
+  c.querySelector("[data-save]").onclick=async function(){
+   var body={action:"setProduct",productId:pid,plans:readPlans(c),name:c.querySelector("[data-name]").value,desc:c.querySelector("[data-desc]").value,cat:c.querySelector("[data-cat]").value,badge:c.querySelector("[data-badge]").value,hidden:c.querySelector("[data-hid]").value==="1",inStock:c.querySelector("[data-stock]").value==="1"};
+   var r=await post(body),j=await r.json().catch(function(){return{}});
+   c.querySelector("[data-msg]").textContent=r.ok?"Saved. Live on the site now.":(j.error||"Could not save ("+r.status+")");
+   if(r.ok){ov[pid]=j.override||ov[pid];c.classList.toggle("is-hidden",body.hidden)}}});
+}
+function couponRow(c,p,a){return'<div class="crow"><input data-cc maxlength="20" placeholder="CODE e.g. WELCOME10" value="'+esc(c)+'" style="text-transform:uppercase"><input type="number" min="1" max="90" data-cp placeholder="% off" value="'+(p||"")+'"><select data-ca><option value="1"'+(a===false?"":" selected")+'>Active</option><option value="0"'+(a===false?" selected":"")+'>Paused</option></select><button type="button" class="red" data-cdel>&#10005;</button></div>'}
+function renderCoupons(){
+ $("view").innerHTML='<div class="card"><b>Discount coupons</b><p class="muted">Customers type the code in their cart and get that % off the whole order. Sale prices on plans still apply first. Pause a coupon to stop it without deleting.</p><div id="crows">'+coupons.map(function(c){return couponRow(c.code,c.percent,c.active)}).join("")+'</div><div class="acts"><button type="button" class="light" id="cAdd">+ Add coupon</button><button id="cSave">Save coupons</button> <span class="muted" id="cMsg"></span></div></div>';
+ function bind(){$("view").querySelectorAll("[data-cdel]").forEach(function(b){b.onclick=function(){b.parentNode.remove()}})}
+ bind();
+ $("cAdd").onclick=function(){$("crows").insertAdjacentHTML("beforeend",couponRow("","",true));bind()};
+ $("cSave").onclick=async function(){
+  var list=[].map.call($("crows").querySelectorAll(".crow"),function(r){return{code:r.querySelector("[data-cc]").value,percent:Number(r.querySelector("[data-cp]").value),active:r.querySelector("[data-ca]").value==="1"}});
+  var r=await post({action:"setCoupons",coupons:list}),j=await r.json().catch(function(){return{}});
+  $("cMsg").textContent=r.ok?"Saved. Coupons work on the site now.":(j.error||"Could not save ("+r.status+")");if(r.ok)coupons=j.coupons;}
+}
+var TEXTS=[["topbar","Top bar message","✨ Digital subscriptions, made simple in Nepal"],["heroBadge","Hero small badge","Your digital store in Nepal"],["heroLede","Hero paragraph","Get access to AI tools, premium subscriptions, software and digital essentials, all in one place."],["shopEyebrow","Shop small label","OUR COLLECTION"],["shopTitle","Shop title","Popular digital products"],["shopSub","Shop subtitle","Explore customer favourites and choose a plan that works for you."],["contactTitle","Help banner title","Need a hand with your order?"],["contactSub","Help banner text","Talk to our team on WhatsApp."]];
+function renderTexts(){
+ $("view").innerHTML='<div class="card"><b>Edit website text</b><p class="muted">Change the wording shown on the home page. Leave a box empty to use the original text.</p>'+TEXTS.map(function(t){return'<label class="lb">'+t[1]+'</label><textarea rows="'+(t[2].length>70?3:1)+'" maxlength="240" data-tx="'+t[0]+'" placeholder="'+esc(t[2])+'">'+esc(texts[t[0]]||"")+'</textarea>'}).join("")+'<div class="acts"><button id="saveTx">Save text</button> <span class="muted" id="txMsg"></span></div></div>';
+ $("saveTx").onclick=async function(){var o={};$("view").querySelectorAll("[data-tx]").forEach(function(e){o[e.dataset.tx]=e.value});var r=await post({action:"setTexts",texts:o});$("txMsg").textContent=r.ok?"Saved. Live on the site now.":"Could not save ("+r.status+")";if(r.ok)texts=o}
+}
+function openCrop(pid,done){
+ var m=document.createElement("div");m.className="mbg";
+ m.innerHTML='<div class="mbox"><b>Product image</b><p class="muted" style="margin:4px 0 8px">Pick a picture, drag it to position, use the slider to zoom. The frame is exactly what customers see.</p><input type="file" accept="image/*" id="cf"><canvas id="cc" width="640" height="400"></canvas><label class="lb">Zoom</label><input type="range" id="cz" min="0.4" max="4" step="0.01" value="1"><div class="acts"><button id="cs" class="green" disabled>Save image</button><button id="cx" class="light">Cancel</button></div><p class="muted" id="cm"></p></div>';
+ document.body.appendChild(m);
+ var cv=m.querySelector("#cc"),ctx=cv.getContext("2d"),CW=640,CH=400,img=null,cx=0,cy=0,z=1,base=1;
+ function clamp(){var s=base*z,hw=CW/(2*s),hh=CH/(2*s);cx=img.width<=hw*2?img.width/2:Math.min(Math.max(cx,hw),img.width-hw);cy=img.height<=hh*2?img.height/2:Math.min(Math.max(cy,hh),img.height-hh)}
+ function draw(c2,W,H){var s=base*z*(W/CW);c2.fillStyle="#fff";c2.fillRect(0,0,W,H);c2.drawImage(img,0,0,img.width,img.height,W/2-cx*s,H/2-cy*s,img.width*s,img.height*s)}
+ function paint(){if(!img){ctx.fillStyle="#eef0fa";ctx.fillRect(0,0,CW,CH);return}clamp();draw(ctx,CW,CH)}
+ paint();
+ m.querySelector("#cf").onchange=function(e){var f=e.target.files[0];if(!f)return;var im=new Image();im.onload=function(){img=im;base=Math.max(CW/im.width,CH/im.height);z=1;m.querySelector("#cz").value=1;cx=im.width/2;cy=im.height/2;m.querySelector("#cs").disabled=false;paint()};im.src=URL.createObjectURL(f)};
+ m.querySelector("#cz").oninput=function(e){z=Number(e.target.value);paint()};
+ var drag=null;cv.style.touchAction="none";
+ cv.onpointerdown=function(e){if(!img)return;drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId)};
+ cv.onpointermove=function(e){if(!drag)return;var k=CW/cv.getBoundingClientRect().width,s=base*z;cx-=(e.clientX-drag.x)*k/s;cy-=(e.clientY-drag.y)*k/s;drag={x:e.clientX,y:e.clientY};paint()};
+ cv.onpointerup=cv.onpointercancel=function(){drag=null};
+ m.querySelector("#cx").onclick=function(){m.remove()};
+ m.querySelector("#cs").onclick=async function(){
+  var out=document.createElement("canvas");out.width=800;out.height=500;draw(out.getContext("2d"),800,500);
+  var data=out.toDataURL("image/jpeg",0.86);m.querySelector("#cs").disabled=true;m.querySelector("#cm").textContent="Saving...";
+  var r=await post({action:"setImage",productId:pid,image:data}),j=await r.json().catch(function(){return{}});
+  if(r.ok){done(j.img);m.remove()}else{m.querySelector("#cm").textContent=j.error||("Failed ("+r.status+")");m.querySelector("#cs").disabled=false}}
+}
+function renderUsers(){
+ $("view").innerHTML=users.length?users.map(function(u){return'<div class="card"><b>'+esc(u.name)+'</b><div class="muted">'+esc(u.email)+(u.phone?' · '+esc(u.phone):'')+'</div><div class="muted">Joined '+new Date(u.createdAt).toLocaleDateString()+'</div><div class="acts"><button class="light" data-reset="'+esc(u.email)+'">Set new password</button></div></div>'}).join("")+'<p class="muted">Passwords are stored as secure hashes and cannot be viewed by anyone, including you. If a customer forgets theirs, use Set new password and tell them the new one.</p>':'<p class="muted">No customers have registered yet.</p>';
+ $("view").querySelectorAll("[data-reset]").forEach(function(b){b.onclick=async function(){var np=prompt("New password for "+b.dataset.reset+" (min 8 characters):");if(!np)return;var r=await post({action:"resetUser",email:b.dataset.reset,password:np});var j=await r.json().catch(function(){return{}});alert(r.ok?"Password changed.":(j.error||"Failed"))}});
 }
 $("loginBtn").onclick=function(){pw=$("pw").value;sessionStorage.setItem("csadmin",pw);$("err").textContent="";load()};
 $("pw").onkeydown=function(e){if(e.key==="Enter")$("loginBtn").click()};
-$("refresh").onclick=load;$("logout").onclick=function(){sessionStorage.removeItem("csadmin");pw="";orders=[];$("app").hidden=true;$("loginBox").hidden=false;$("pw").value=""};
+$("refresh").onclick=load;$("mailtest").onclick=async function(){var to=prompt("Send a test email to which address?");if(!to)return;var r=await post({action:"mailtest",to:to}),j=await r.json().catch(function(){return{}});alert(r.ok?"Test email sent. Check that inbox (and spam).":(j.error||"Failed ("+r.status+")"))};$("logout").onclick=function(){sessionStorage.removeItem("csadmin");pw="";$("app").hidden=true;$("loginBox").hidden=false;$("pw").value=""};
 if(pw)load();
 </script></body></html>

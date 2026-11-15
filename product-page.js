@@ -1,27 +1,32 @@
+(window.CS_READY||Promise.resolve()).then(()=>{
 const products=window.CS_PRODUCTS||[];
 const params=new URLSearchParams(location.search),id=Number(params.get("id"));
 const p=products.find(x=>x.id===id),root=document.getElementById("buyPageContent");
-const money=n=>"NPR "+Number(n).toLocaleString("en-IN");
-const WA_NUMBER="9779716537747";
+const money=CS.money,esc=CS.esc;
+const WA_NUMBER="9779717647043";
 document.getElementById("year").textContent=new Date().getFullYear();
 if(!p){
  root.innerHTML='<div class="buy-not-found"><h1>Product not found</h1><p>Please return to the store and choose a product.</p><a href="index.html#shop">Back to all products →</a></div>';
 }else{
  document.title="Buy "+p.name+" | CheapSewa.Store";
+ const firstOk=Math.max(0,p.plans.findIndex(CS.planOk)),allOut=!CS.prodOk(p);
  document.getElementById("crumbName").textContent=p.name;
  root.innerHTML=`<div class="buy-layout">
- <div class="buy-art"><div class="buy-art-symbol" style="color:${p.color}">${p.symbol}</div><div class="buy-art-caption">CheapSewa.Store · Premium digital access</div></div>
- <div class="buy-info"><span class="eyebrow">${p.cat.toUpperCase()}</span><h1>${p.name}</h1>
- <p class="buy-description">${p.desc} Choose your plan, then continue to pay.</p>
- <div class="buy-price-hint">1. Select your subscription plan</div>
- <div class="buy-plans">${p.plans.map((plan,i)=>`<label class="buy-plan"><span><strong>${plan[0]}</strong><small>${i===0?"Available plan":"Digital subscription plan"}</small></span><b>${money(plan[1])}</b><input type="radio" name="chosenPlan" value="${i}" ${i===0?"checked":""}></label>`).join("")}</div>
+ <div class="buy-art">${CS.img(p,"buy-art-img")}${allOut?"":CS.pillHtml(p)}<div class="buy-art-caption">CheapSewa.Store · Premium digital access</div></div>
+ <div class="buy-info">${p.badge?`<span class="buy-badge">${esc(p.badge)}</span><br>`:""}<span class="eyebrow">${esc(p.cat).toUpperCase()}</span><h1>${esc(p.name)}</h1>
+ <p class="buy-description">${esc(p.desc)} Choose your plan, then add it to your cart or buy it now.</p>
+ <div class="buy-price-hint">Select your plan</div>
+ <div class="buy-plans">${p.plans.map((plan,i)=>{const ok=CS.planOk(plan),sale=CS.onSale(plan);return `<label class="buy-plan${ok?"":" is-oos"}"><span><strong>${esc(plan[0])}${sale&&ok?`<em class="sale-chip">Save ${CS.pct(plan)}%</em>`:""}${ok?"":'<em class="oos-chip">Out of stock</em>'}</strong><small>${ok?(i===firstOk?"Popular choice":"Digital subscription plan"):"Currently unavailable"}</small></span><span class="plan-price">${sale?`<s>${money(plan[1])}</s>`:""}<b>${money(CS.eff(plan))}</b></span><input type="radio" name="chosenPlan" value="${i}" ${i===firstOk?"checked":""} ${ok?"":"disabled"}></label>`}).join("")}</div>
+ <div class="instant-note"><span class="instant-ic">⚡</span><div><b>Instant delivery after payment</b><small>Pay, send your screenshot and your subscription is delivered right away. Need help? <a href="mailto:support@cheapsewa.store">support@cheapsewa.store</a></small></div></div>
+ <div class="buy-actions"><button class="primary-btn full" type="button" id="addToCartBtn">Add to cart +</button><a class="cart-link" href="index.html#cart" id="goCart">View cart (<span id="cartN">0</span>)</a></div>
+ <div class="buy-or">or buy this plan right now</div>
  <form id="productOrderForm" novalidate>
-  <div class="buy-price-hint">2. Your details</div>
+  <div class="buy-price-hint">Your details</div>
   <div class="product-order-fields"><label>Full name<input name="name" required placeholder="Your name"></label><label>Phone number<input name="phone" required inputmode="tel" placeholder="98XXXXXXXX"></label></div>
   <button class="primary-btn full" type="button" id="productContinue">Continue to amount <span>→</span></button>
  </form>
- <div class="buy-trust"><span>🇳🇵 Made for Nepal</span><span>🔒 Verify before paying</span><span>💳 Local payment options</span></div>
- <div class="buy-help"><b>Payment help</b><br>eSewa · Khalti · Fonepay · Bank transfer<br><a href="https://wa.me/${WA_NUMBER}" target="_blank" rel="noopener">Need help? WhatsApp support: 9716537747</a></div>
+ <div class="buy-trust"><span>⚡ Instant delivery after payment</span><span>🇳🇵 Made for Nepal</span><span>🔒 Verify before paying</span><span>💳 Local payment options</span></div>
+ <div class="buy-help"><b>Payment help</b><br>eSewa · Khalti · Fonepay · Bank transfer<br><a href="https://wa.me/${WA_NUMBER}" target="_blank" rel="noopener">Need help? WhatsApp support: 9717647043</a><br><a href="mailto:support@cheapsewa.store">✉ support@cheapsewa.store</a></div>
  </div></div>
  <div class="overlay" id="pOverlay"></div>
  <div class="modal checkout-modal" id="pModal" role="dialog" aria-modal="true" aria-label="Checkout">
@@ -54,9 +59,14 @@ if(!p){
   </form>
  </div>`;
  const $=id=>document.getElementById(id);
+ if(allOut){const b=$("productContinue");b.disabled=true;b.innerHTML="Out of stock";b.style.opacity=".55";$("addToCartBtn").disabled=true;$("addToCartBtn").textContent="Out of stock";b.insertAdjacentHTML("beforebegin","<p style=\"color:#d9464e;font-weight:700;margin:10px 0\">This product is currently out of stock. Please check back soon.</p>")}
+ const upCount=()=>{$("cartN").textContent=CS.cart.count();const mc=document.getElementById("mobileCartCount");if(mc)mc.textContent=CS.cart.count();const hc=document.getElementById("hdrCart");if(hc)hc.textContent="Cart ("+CS.cart.count()+")"};
+ upCount();document.addEventListener("cs-cart",upCount);
+ let tt;const toast=t=>{let el=document.getElementById("toast");if(!el){el=document.createElement("div");el.id="toast";el.className="toast";document.body.appendChild(el)}el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2400)};
+ $("addToCartBtn").onclick=()=>{if(allOut)return;const plan=chosen();if(!CS.planOk(plan)){toast("This plan is out of stock");return}CS.cart.add(p.id,plan[0],1);toast("Added to cart: "+p.name+" · "+plan[0])};
  const form=$("productOrderForm"),modal=$("pModal"),overlay=$("pOverlay"),pForm=$("pForm");
  const stepMethod=$("pStepMethod"),stepPay=$("pStepPay");
- const chosen=()=>p.plans[Number(document.querySelector('input[name="chosenPlan"]:checked').value)];
+ const chosen=()=>{const r=document.querySelector('input[name="chosenPlan"]:checked');return p.plans[r?Number(r.value):firstOk]};
  let timer=null,seconds=900,expired=false;
  const stop=()=>{if(timer){clearInterval(timer);timer=null}};
  const tick=()=>$("pCountdown").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0");
@@ -67,7 +77,7 @@ if(!p){
  };
  const openModal=()=>{
   const plan=chosen();
-  $("pSummary").innerHTML=`<div><span>${p.name} · ${plan[0]} × 1</span><b>${money(plan[1])}</b></div><hr><div><b>Total</b><b>${money(plan[1])}</b></div>`;
+  $("pSummary").innerHTML=`<div><span>${esc(p.name)} · ${esc(plan[0])} × 1</span><b>${money(CS.eff(plan))}</b></div><hr><div><b>Total</b><b>${money(CS.eff(plan))}</b></div>`;
   pForm.reset();stop();showStep(1);
   overlay.classList.add("show");modal.classList.add("show");
  };
@@ -78,7 +88,7 @@ if(!p){
  $("pChange").onclick=()=>{stop();pForm.reset();showStep(1)};
  pForm.addEventListener("change",e=>{
   if(e.target.name==="payment"){
-   $("pFinal").textContent=e.target.value+" selected · Amount due: "+money(chosen()[1]);
+   $("pFinal").textContent=e.target.value+" selected · Amount due: "+money(CS.eff(chosen()));
    showStep(2);startTimer();
   }
  });
@@ -89,13 +99,20 @@ if(!p){
   if(!file){alert("Please upload your payment screenshot first.");return}
   const method=pForm.querySelector('input[name="payment"]:checked');
   const btn=$("pVerify");btn.disabled=true;btn.textContent="Saving your order…";
-  let orderId="";
   try{
-   orderId=await window.CSOrder.submit({name:form.elements.name.value,phone:form.elements.phone.value,product:p.name,plan:chosen()[0],amount:chosen()[1],method:method?method.value:""},file);
-  }catch(err){console.error(err)}
-  const message=`Hello CheapSewa! I have paid and would like you to verify my payment.\n\n${orderId?"Order ID: "+orderId+"\n":""}Name: ${form.elements.name.value}\nPhone: ${form.elements.phone.value}\nProduct: ${p.name}\nPlan: ${chosen()[0]}\nTotal: ${money(chosen()[1])}\nPayment method: ${method?method.value:"-"}\n\nI will attach my payment screenshot here.`;
-  location.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(message);
+   const id=await window.CSOrder.submit({name:form.elements.name.value,phone:form.elements.phone.value,product:p.name,plan:chosen()[0],amount:CS.eff(chosen()),items:[{id:p.id,plan:chosen()[0],qty:1}],coupon:"",method:method?method.value:""},file);
+   stop();
+   const msg=`Hello CheapSewa! I have paid.\nOrder ID: ${id}\nProduct: ${p.name} (${chosen()[0]})\nTotal: ${money(CS.eff(chosen()))}`;
+   const host=document.createElement("div");host.className="cs-done-host";
+   const modalBody=btn.closest("form")||pForm;modalBody.innerHTML="";modalBody.appendChild(host);
+   window.CSOrder.done(host,id,{phone:form.elements.phone.value,wa:"https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg)});
+  }catch(err){
+   console.error(err);btn.disabled=false;btn.innerHTML="Verify payment <span>→</span>";
+   alert((err&&err.message)||"Could not save your order. Please try again.");
+  }
  };
- document.getElementById("mobileCart")?.addEventListener("click",()=>location.href="index.html#shop");
- document.getElementById("mobileLogin")?.addEventListener("click",()=>location.href="index.html#home");
+ document.getElementById("mobileCart")?.addEventListener("click",()=>location.href="index.html#cart");
+ document.getElementById("mobileLogin")?.addEventListener("click",()=>location.href="account.html");
 }
+
+});
