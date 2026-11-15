@@ -15,8 +15,7 @@ if(!p){
  <div class="buy-art">${CS.img(p,"buy-art-img")}${allOut?"":CS.pillHtml(p)}<div class="buy-art-caption">CheapSewa.Store · Premium digital access</div></div>
  <div class="buy-info">${p.badge?`<span class="buy-badge">${esc(p.badge)}</span><br>`:""}<span class="eyebrow">${esc(p.cat).toUpperCase()}</span><h1>${esc(p.name)}</h1>
  <p class="buy-description">${esc(p.desc)} Choose your plan, then add it to your cart or buy it now.</p>
- <div class="buy-price-hint">Select your plan</div>
- <div class="buy-plans">${p.plans.map((plan,i)=>{const ok=CS.planOk(plan),sale=CS.onSale(plan);return `<label class="buy-plan${ok?"":" is-oos"}"><span><strong>${esc(plan[0])}${sale&&ok?`<em class="sale-chip">Save ${CS.pct(plan)}%</em>`:""}${ok?"":'<em class="oos-chip">Out of stock</em>'}</strong><small>${ok?(i===firstOk?"Popular choice":"Digital subscription plan"):"Currently unavailable"}</small></span><span class="plan-price">${sale?`<s>${money(plan[1])}</s>`:""}<b>${money(CS.eff(plan))}</b></span><input type="radio" name="chosenPlan" value="${i}" ${i===firstOk?"checked":""} ${ok?"":"disabled"}></label>`}).join("")}</div>
+ <div id="modeBox"></div><div class="buy-plans" id="planList"></div>
  <div class="instant-note"><span class="instant-ic">⚡</span><div><b>Instant delivery after payment</b><small>Pay, send your screenshot and your subscription is delivered right away. Need help? <a href="mailto:support@cheapsewa.store">support@cheapsewa.store</a></small></div></div>
  <div class="buy-actions"><button class="primary-btn full" type="button" id="addToCartBtn">Add to cart +</button><a class="cart-link" href="index.html#cart" id="goCart">View cart (<span id="cartN">0</span>)</a></div>
  <div class="buy-or">or buy this plan right now</div>
@@ -58,6 +57,25 @@ if(!p){
    </section>
   </form>
  </div>`;
+
+ /* ---- Sharing / Private switch + plan list ---- */
+ const MODES=(Array.isArray(p.modes)&&p.modes.length&&p.plans.every(pl=>p.modes.some(m=>pl[0].indexOf(m+" · ")===0)))?p.modes:null;
+ const modeOf=pl=>MODES?MODES.find(m=>pl[0].indexOf(m+" · ")===0):"";
+ let curMode=MODES?(MODES.find(m=>p.plans.some(pl=>modeOf(pl)===m&&CS.planOk(pl)))||MODES[0]):"";
+ const planShown=pl=>MODES?pl[0].slice(modeOf(pl).length+3):pl[0];
+ function drawPlans(){
+  const idx=p.plans.map((pl,i)=>i).filter(i=>!MODES||modeOf(p.plans[i])===curMode);
+  const first=idx.find(i=>CS.planOk(p.plans[i]));
+  document.getElementById("planList").innerHTML=idx.map(i=>{const plan=p.plans[i],ok=CS.planOk(plan),sale=CS.onSale(plan);return `<label class="buy-plan${ok?"":" is-oos"}"><span><strong>${esc(planShown(plan))}${sale&&ok?`<em class="sale-chip">Save ${CS.pct(plan)}%</em>`:""}${ok?"":'<em class="oos-chip">Out of stock</em>'}</strong><small>${ok?(i===first?"Popular choice":"Digital subscription plan"):"Currently unavailable"}</small></span><span class="plan-price">${sale?`<s>${money(plan[1])}</s>`:""}<b>${money(CS.eff(plan))}</b></span><input type="radio" name="chosenPlan" value="${i}" ${i===first?"checked":""} ${ok?"":"disabled"}></label>`}).join("");
+ }
+ function drawModes(){
+  const box=document.getElementById("modeBox");
+  if(!MODES){box.innerHTML="";return}
+  box.innerHTML=`<div class="buy-price-hint">Choose account type</div><div class="mode-switch" role="tablist">${MODES.map(m=>`<button type="button" role="tab" class="mode-btn${m===curMode?" is-on":""}" data-mode="${esc(m)}" aria-selected="${m===curMode}">${esc(m)}</button>`).join("")}</div><p class="mode-note" id="modeNote">${esc((p.modeNotes||{})[curMode]||"")}</p><div class="buy-price-hint">Select your plan</div>`;
+  box.querySelectorAll(".mode-btn").forEach(b=>b.onclick=()=>{if(curMode===b.dataset.mode)return;curMode=b.dataset.mode;drawModes();const l=document.getElementById("planList");l.classList.remove("swap");void l.offsetWidth;drawPlans();l.classList.add("swap")});
+ }
+ if(!MODES)document.getElementById("modeBox").innerHTML='<div class="buy-price-hint">Select your plan</div>';
+ drawModes();drawPlans();
  const $=id=>document.getElementById(id);
  if(allOut){const b=$("productContinue");b.disabled=true;b.innerHTML="Out of stock";b.style.opacity=".55";$("addToCartBtn").disabled=true;$("addToCartBtn").textContent="Out of stock";b.insertAdjacentHTML("beforebegin","<p style=\"color:#d9464e;font-weight:700;margin:10px 0\">This product is currently out of stock. Please check back soon.</p>")}
  const upCount=()=>{$("cartN").textContent=CS.cart.count();const mc=document.getElementById("mobileCartCount");if(mc)mc.textContent=CS.cart.count();const hc=document.getElementById("hdrCart");if(hc)hc.textContent="Cart ("+CS.cart.count()+")"};

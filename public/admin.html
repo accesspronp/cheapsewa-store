@@ -37,9 +37,9 @@ button:disabled{opacity:.6;cursor:wait}input[type=number]{font-size:16px}
  <div class="bar"><h1>CheapSewa Admin</h1><div><span class="tag" id="pcheck" title="Server double-checks prices at checkout"></span> <button class="light" id="mailtest">Test email</button> <button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
  <div class="tabs" id="tabs"></div><div id="view"></div>
 </div>
-<script src="products-data.js?v=9"></script>
+<script src="products-data.js?v=15"></script>
 <script>
-var pw=sessionStorage.getItem("csadmin")||"",orders=[],users=[],ov={},custom={},coupons=[],priceCheck=null,tab="orders",filter="all";
+var pw=sessionStorage.getItem("csadmin")||"",orders=[],users=[],reviews=[],ov={},custom={},coupons=[],priceCheck=null,tab="orders",filter="all";
 var STAGES=["pending","verifying","approved","processing","delivered","rejected"];
 var NAMES={pending:"Order received",verifying:"Verifying payment",approved:"Payment approved",processing:"Preparing subscription",delivered:"Delivered",rejected:"Rejected"};
 var $=function(i){return document.getElementById(i)};
@@ -67,6 +67,7 @@ async function load(){
   var u=await api("?action=users");users=((await u.json().catch(function(){return{}})).users)||[];
   var c=await fetch("/api/catalog",{cache:"no-store"});var cj=await c.json().catch(function(){return{}});ov=cj.overrides||{};texts=cj.texts||{};custom=cj.custom||{};
   var st=await api("?action=status");priceCheck=((await st.json().catch(function(){return{}})).priceCheck);
+  var rv=await api("?action=reviews");reviews=((await rv.json().catch(function(){return{}})).reviews)||[];
   var cp=await api("?action=coupons");coupons=((await cp.json().catch(function(){return{}})).coupons)||[];
   $("loginBox").hidden=true;$("app").hidden=false;var pc=$("pcheck");pc.className="tag "+(priceCheck?"on":"off");pc.textContent=priceCheck?"Server price check: ON":"Server price check: OFF";render();
  }catch(e){showLogin("Network error: "+e.message)}
@@ -74,9 +75,9 @@ async function load(){
 }
 var texts={};
 function render(){
- $("tabs").innerHTML=[["orders","Orders ("+orders.length+")"],["products","Products & prices"],["coupons","Coupons ("+coupons.length+")"],["texts","Site text"],["users","Customers ("+users.length+")"]].map(function(t){return'<button class="'+(tab===t[0]?"":"light")+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join("");
+ $("tabs").innerHTML=[["orders","Orders ("+orders.length+")"],["products","Products & prices"],["coupons","Coupons ("+coupons.length+")"],["texts","Site text"],["reviews","Reviews ("+reviews.length+")"],["users","Customers ("+users.length+")"]].map(function(t){return'<button class="'+(tab===t[0]?"":"light")+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join("");
  $("tabs").querySelectorAll("button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;render()}});
- if(tab==="orders")renderOrders();else if(tab==="products")renderProducts();else if(tab==="coupons")renderCoupons();else if(tab==="texts")renderTexts();else renderUsers();
+ if(tab==="orders")renderOrders();else if(tab==="products")renderProducts();else if(tab==="coupons")renderCoupons();else if(tab==="texts")renderTexts();else if(tab==="reviews")renderReviews();else renderUsers();
 }
 function renderOrders(){
  var f=["all"].concat(STAGES),h='<div class="tabs">'+f.map(function(s){var n=s==="all"?orders.length:orders.filter(function(o){return o.status===s}).length;return'<button class="'+(s===filter?"":"light")+'" data-f="'+s+'">'+(NAMES[s]||"All")+" ("+n+")</button>"}).join("")+"</div>";
@@ -186,6 +187,34 @@ function openCrop(pid,done){
   var data=out.toDataURL("image/jpeg",0.86);m.querySelector("#cs").disabled=true;m.querySelector("#cm").textContent="Saving...";
   var r=await post({action:"setImage",productId:pid,image:data}),j=await r.json().catch(function(){return{}});
   if(r.ok){done(j.img);m.remove()}else{m.querySelector("#cm").textContent=j.error||("Failed ("+r.status+")");m.querySelector("#cs").disabled=false}}
+}
+function pname(id){var p=(window.CS_PRODUCTS||[]).find(function(x){return x.id===id});return p?p.name:(custom&&custom[id]&&custom[id].name)||("Product #"+id)}
+var rvFilter="all";
+function renderReviews(){
+ var ids=[];reviews.forEach(function(r){if(ids.indexOf(r.product)<0)ids.push(r.product)});
+ var list=reviews.filter(function(r){return rvFilter==="all"||String(r.product)===rvFilter});
+ var h='<div class="card"><b>Customer reviews</b><div class="muted">Customers write these on each product page. Delete any bad or fake comment with the red button.</div>'+
+  '<label class="lb">Show reviews of</label><select id="rvFilter"><option value="all">All products ('+reviews.length+')</option>'+ids.map(function(i){return'<option value="'+i+'"'+(String(i)===rvFilter?" selected":"")+'>'+esc(pname(i))+'</option>'}).join("")+'</select></div>';
+
+ var pl=(window.CS_PRODUCTS||[]).map(function(p){return[p.id,p.name]});Object.keys(custom||{}).forEach(function(k){if(!pl.some(function(x){return String(x[0])===k}))pl.push([Number(k),(custom[k]&&custom[k].name)||("Product #"+k)])});
+ h+='<div class="card"><b>Add a custom review</b><div class="muted">Write a review with any name, stars and time.</div><div class="two"><div><label class="lb">Product</label><select id="arP">'+pl.map(function(x){return'<option value="'+x[0]+'">'+esc(x[1])+'</option>'}).join("")+'</select></div><div><label class="lb">Reviewer name</label><input id="arN" maxlength="60" placeholder="e.g. Sujan Shrestha"></div></div><div class="two"><div><label class="lb">Stars</label><select id="arS"><option value="5">★★★★★ (5)</option><option value="4">★★★★☆ (4)</option><option value="3">★★★☆☆ (3)</option><option value="2">★★☆☆☆ (2)</option><option value="1">★☆☆☆☆ (1)</option></select></div><div><label class="lb">Posted how long ago</label><div style="display:flex;gap:8px"><input id="arA" type="number" min="0" max="10" value="0" style="flex:1"><select id="arU" style="flex:1.4"><option value="d">days ago</option><option value="m">months ago</option><option value="y">years ago</option></select></div></div></div><label class="lb">Comment</label><textarea id="arT" rows="3" maxlength="500" placeholder="Review text..."></textarea><div class="acts"><button class="green" id="arAdd">Add review</button><span class="muted" id="arMsg"></span></div></div>';
+ h+=list.length?list.map(function(r){return'<div class="card"><div class="row"><div><b>'+esc(r.name)+'</b> <span class="tag">'+esc(pname(r.product))+'</span>'+(r.custom?' <span class="tag on">Custom</span>':'')+'<div class="muted">'+esc(r.email||"")+' · '+new Date(r.createdAt).toLocaleString()+'</div></div><div style="color:#f5a623;font-size:18px;letter-spacing:1px">'+"★".repeat(r.rating)+'<span style="color:#d6d9e4">'+"★".repeat(5-r.rating)+'</span></div></div><p style="margin:10px 0 0;line-height:1.5;word-break:break-word">'+esc(r.text)+'</p><div class="acts"><button class="red" data-delrv="'+esc(r.id)+'" data-pid="'+r.product+'">Delete this review</button></div></div>'}).join(""):'<div class="card muted">No reviews yet.</div>';
+ $("view").innerHTML=h;
+ $("rvFilter").onchange=function(){rvFilter=this.value;renderReviews()};
+ $("arAdd").onclick=async function(){
+  var n=Number($("arA").value)||0,u=$("arU").value,d=new Date();
+  if(u==="d")d.setDate(d.getDate()-n);else if(u==="m")d.setMonth(d.getMonth()-n);else d.setFullYear(d.getFullYear()-n);
+  if(n===0)d=new Date(Date.now()-60000);
+  $("arAdd").disabled=true;$("arMsg").textContent="";
+  var r=await post({action:"addReview",productId:Number($("arP").value),name:$("arN").value,rating:Number($("arS").value),text:$("arT").value,createdAt:d.toISOString()}),j=await r.json().catch(function(){return{}});
+  $("arAdd").disabled=false;
+  if(!r.ok){$("arMsg").style.color="#b02a33";$("arMsg").textContent=j.error||"Could not add";return}
+  await load();tab="reviews";render();$("arMsg").textContent="Added ✓"};
+ $("view").querySelectorAll("[data-delrv]").forEach(function(b){b.onclick=async function(){
+  if(!confirm("Delete this review permanently?"))return;
+  b.disabled=true;var r=await post({action:"deleteReview",productId:Number(b.dataset.pid),reviewId:b.dataset.delrv}),j=await r.json().catch(function(){return{}});
+  if(!r.ok){alert(j.error||"Could not delete");b.disabled=false;return}
+  reviews=reviews.filter(function(x){return x.id!==b.dataset.delrv});render()}});
 }
 function renderUsers(){
  $("view").innerHTML=users.length?users.map(function(u){return'<div class="card"><b>'+esc(u.name)+'</b><div class="muted">'+esc(u.email)+(u.phone?' · '+esc(u.phone):'')+'</div><div class="muted">Joined '+new Date(u.createdAt).toLocaleDateString()+'</div><div class="acts"><button class="light" data-reset="'+esc(u.email)+'">Set new password</button></div></div>'}).join("")+'<p class="muted">Passwords are stored as secure hashes and cannot be viewed by anyone, including you. If a customer forgets theirs, use Set new password and tell them the new one.</p>':'<p class="muted">No customers have registered yet.</p>';

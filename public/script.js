@@ -7,9 +7,9 @@ function renderProducts(){
  const q=$("#searchInput").value.toLowerCase(),sort=$("#sortSelect").value,low=p=>CS.eff(CS.cheapest(p));
  let list=products.filter(p=>(activeCategory==="All"||p.cat===activeCategory)&&(`${p.name} ${p.cat} ${p.desc}`).toLowerCase().includes(q));
  if(sort==="low")list.sort((a,b)=>low(a)-low(b));if(sort==="high")list.sort((a,b)=>low(b)-low(a));if(sort==="az")list.sort((a,b)=>a.name.localeCompare(b.name));
- $("#productGrid").innerHTML=list.map(p=>{
+ $("#productGrid").innerHTML=list.map((p,i)=>{
   const ch=CS.cheapest(p),sale=CS.onSale(ch),out=!CS.prodOk(p),tag=p.badge||(sale?"Save "+CS.pct(ch)+"%":"");
-  return `<article class="product-card"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${esc(p.name)} plans"><div class="product-art" style="--art:${esc(p.color)}"><span class="product-cat">${esc(p.cat)}</span>${out?'<span class="oos">Out of stock</span>':(CS.pillHtml(p)+(tag?`<span class="deal-tag">${esc(tag)}</span>`:""))}${CS.img(p,"product-img")}</div><div class="product-body"><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p><div class="product-foot"><span class="price">${sale?`<s class="was">${money(ch[1])}</s> `:""}${money(CS.eff(ch))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`}).join("");
+  return `<article class="product-card" style="--i:${Math.min(i,11)}"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${esc(p.name)} plans"><div class="product-art" style="--art:${esc(p.color)}"><span class="product-cat">${esc(p.cat)}</span>${out?'<span class="oos">Out of stock</span>':(CS.pillHtml(p)+(tag?`<span class="deal-tag">${esc(tag)}</span>`:""))}${CS.img(p,"product-img")}</div><div class="product-body"><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p><div class="product-foot"><span class="price">${sale?`<s class="was">${money(ch[1])}</s> `:""}${money(CS.eff(ch))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`}).join("");
  $("#emptyState").hidden=!!list.length;
 }
 function setCategory(c){activeCategory=c;$$("[data-cat]").forEach(b=>b.classList.toggle("active",b.dataset.cat===c));renderProducts();$("#categoryMenu").classList.remove("show");document.querySelector("#shop").scrollIntoView({behavior:"smooth"})}
@@ -193,3 +193,16 @@ window.addEventListener("hashchange",()=>{if(location.hash==="#cart")openCart()}
 
 /* Accepted banks marquee: duplicate once for a seamless right-to-left loop */
 document.querySelectorAll(".bank-track").forEach(t=>{[...t.children].forEach(c=>{const n=c.cloneNode(true);n.setAttribute("aria-hidden","true");t.appendChild(n)})});
+
+/* Smooth scroll-reveal for every section (runs on every page load) */
+(()=>{
+ const sel=".category-section,.products-section .section-head,.filter-chips,.why-section,.reviews-section .section-head,.faq-section,.contact-band .contact-inner,.footer-main,.bank-marquee";
+ const stag=".category-card,.review-card,.benefits>div,.faq-list details";
+ const els=[...document.querySelectorAll(sel)];
+ document.querySelectorAll(stag).forEach(e=>{e.parentElement&&[...e.parentElement.children].indexOf(e)>-1&&(e.style.setProperty("--rd",Math.min([...e.parentElement.children].indexOf(e),8)*70+"ms"),els.push(e))});
+ window.__csRevealOk=true;
+ if(!("IntersectionObserver" in window)){document.documentElement.classList.remove("cs-js");return}
+ els.forEach(e=>e.classList.add("reveal"));
+ const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target)}}),{threshold:.08,rootMargin:"0px 0px -6% 0px"});
+ els.forEach(e=>io.observe(e));
+})();

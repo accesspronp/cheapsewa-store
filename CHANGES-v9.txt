@@ -16,3 +16,23 @@ CHEAPSEWA v9 - WHAT CHANGED
 NOTE: if an old WhatsApp number still shows, open admin.html > Site text and clear any box that contains it.
 NETLIFY NOTE: netlify.toml now has SECRETS_SCAN_OMIT_KEYS="SMTP_USER" because the support email is public on the site.
 DEPLOY: upload the whole folder to Netlify as before (the sign-in name change needs the updated netlify/functions/auth.mjs).
+
+V10: animation on every refresh, new prices, Sharing/Private switch (Netflix, Claude Pro). Reset old admin prices if you changed them.
+
+V11: top bar is now soft grey with "Support: 6 AM - 5 AM (Nepal time)" and small Instagram / Facebook / WhatsApp icons.
+   Instagram + Facebook links are in public/index.html and public/product.html (search "top-social") - put your real page links there.
+   Hero: the 3 round icons are now small and overlapping (like the example). Opening animation shortened to about 0.9 seconds.
+   ChatGPT Plus: 1 Month 650, 3 Months 1650 (public/products-data.js).
+
+V12: top bar and "All Categories" bar are now dark grey (#1a1a1a, about 90% black).
+   The "All Categories" bar hides when you scroll down and comes back when you scroll up (public/header-scroll.js).
+   Light grid lines now cover the whole top part of every page (end of public/style.css, "body::before").
+
+V13: only the top bar is grey now (#4d4d4d, about 70% black); the "All Categories" bar is white again but still hides when you scroll down.
+   Grid lines: 70% visible and cover the middle 70% of the page width (end of public/style.css).
+
+V14: every product page has its own review box (stars + comments). Customers must be signed in to post; one review per customer per product (posting again edits it).
+   Admin panel > "Reviews" tab: see every review (with customer email) and delete bad ones. Files: netlify/functions/reviews.mjs, public/reviews-ui.js, admin.mjs (action deleteReview).
+   Upload the WHOLE folder again (the new netlify function is needed for reviews).
+
+V15: reviews show the reviewer's full name. Admin > Reviews > "Add a custom review": any name, stars, comment and how long ago (days / months / years).
