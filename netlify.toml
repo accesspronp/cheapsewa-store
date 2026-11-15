@@ -1,6 +1,11 @@
 [build]
   publish = "public"
 
+[build.environment]
+  # SMTP_USER is the public support email (support@cheapsewa.store) shown on the site, so it is fine in the page.
+  # SMTP_PASS and ADMIN_PASSWORD stay protected by the secrets scanner.
+  SECRETS_SCAN_OMIT_KEYS = "SMTP_USER"
+
 [functions]
   directory = "netlify/functions"
   # lets the server read the built-in product list to double-check prices at checkout
@@ -11,3 +16,24 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
     Cache-Control = "no-store"
+
+# Always re-check pages and scripts so changes (like a new WhatsApp number) show up right after deploy
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

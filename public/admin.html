@@ -37,7 +37,7 @@ button:disabled{opacity:.6;cursor:wait}input[type=number]{font-size:16px}
  <div class="bar"><h1>CheapSewa Admin</h1><div><span class="tag" id="pcheck" title="Server double-checks prices at checkout"></span> <button class="light" id="mailtest">Test email</button> <button class="light" id="refresh">Refresh</button> <button class="light" id="logout">Log out</button></div></div>
  <div class="tabs" id="tabs"></div><div id="view"></div>
 </div>
-<script src="products-data.js"></script>
+<script src="products-data.js?v=9"></script>
 <script>
 var pw=sessionStorage.getItem("csadmin")||"",orders=[],users=[],ov={},custom={},coupons=[],priceCheck=null,tab="orders",filter="all";
 var STAGES=["pending","verifying","approved","processing","delivered","rejected"];

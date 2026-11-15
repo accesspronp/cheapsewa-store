@@ -13,4 +13,6 @@ CHEAPSEWA v9 - WHAT CHANGED
    Change the wording in catalog-client.js (CS.PILL_EXTRA) or per product with  pills:["Sale","Cheap"]  in products-data.js.
 7. Product buying page: "Instant delivery after payment" box + badge.
 
+NOTE: if an old WhatsApp number still shows, open admin.html > Site text and clear any box that contains it.
+NETLIFY NOTE: netlify.toml now has SECRETS_SCAN_OMIT_KEYS="SMTP_USER" because the support email is public on the site.
 DEPLOY: upload the whole folder to Netlify as before (the sign-in name change needs the updated netlify/functions/auth.mjs).
