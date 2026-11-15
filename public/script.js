@@ -132,3 +132,6 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModals();if((e.
  loginButton?.addEventListener("click",()=>location.href="account.html");
  if(count&&mobileCount){new MutationObserver(()=>mobileCount.textContent=count.textContent).observe(count,{childList:true,characterData:true,subtree:true});mobileCount.textContent=count.textContent;}
 })();
+
+/* Accepted banks marquee: duplicate once for a seamless right-to-left loop */
+document.querySelectorAll(".bank-track").forEach(t=>{[...t.children].forEach(c=>{const n=c.cloneNode(true);n.setAttribute("aria-hidden","true");t.appendChild(n)})});

@@ -367,3 +367,65 @@ img,video,svg,iframe { max-width:100%; }
 @media(max-width:700px){.hero-visual{margin:12px 0 52px}}
 .footer-main .foot-bank{font-size:11px;color:#1b2542;line-height:1.1;text-align:left}
 .foot-bank svg{flex:none;width:18px;height:18px}
+
+/* ===== v5: smaller hero, floating pills, bank marquee ===== */
+.hero-visual{max-width:408px!important;justify-self:center}
+.hero-pill{position:absolute;z-index:6;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap;color:#fff;box-shadow:0 12px 28px #18213b33;animation:floatLabel 5s ease-in-out infinite}
+.pill-green{background:linear-gradient(135deg,#10b981,#0e9f6e);left:-34px;top:8%}
+.pill-black{background:#10172b;right:-36px;top:46%;animation-delay:-1.6s}
+.pill-purple{background:linear-gradient(135deg,#6a3df0,#5b3df5);left:-26px;bottom:12%;animation-delay:-3s}
+@media(max-width:700px){
+ .hero-visual{width:80%;margin-inline:auto}
+ .pill-green{left:-8px;font-size:11px;padding:8px 13px}.pill-black{right:-8px;font-size:11px;padding:8px 13px}.pill-purple{left:-8px;font-size:11px;padding:8px 13px}
+}
+
+.pay-strip .pay-strip-row{display:flex;align-items:center;gap:18px;padding:12px 0;flex-wrap:nowrap}
+.pay-strip .pay-strip-row>span{flex:none;margin:0}
+.bank-marquee{flex:1;min-width:0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.bank-track{display:flex;width:max-content;animation:bankScroll 42s linear infinite;will-change:transform}
+.bank-marquee:hover .bank-track{animation-play-state:paused}
+@keyframes bankScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.bank-chip{flex:none;display:flex;align-items:center;justify-content:center;height:52px;padding:0 18px;margin-right:12px;background:#fff;border:1px solid #e6e9f5;border-radius:14px;box-shadow:0 4px 12px #2a1d8f0d;overflow:hidden}
+.bank-chip.fill{padding:0}
+.pay-strip .pay-strip-row .bank-chip img{height:30px;width:auto;max-width:none;padding:0;border:0;border-radius:0;box-shadow:none;background:none;box-sizing:border-box;transform:none;display:block}
+.pay-strip .pay-strip-row .bank-chip.fill img{height:52px}
+.pay-strip .pay-strip-row .bank-chip.wide img{height:22px}
+.pay-strip .pay-strip-row .bank-chip.pay img[alt="eSewa"]{height:42px}
+.pay-strip .pay-strip-row .bank-chip.pay img[alt="Khalti"]{height:48px}
+.pay-strip .pay-strip-row .bank-chip.pay img[alt="Fonepay"]{height:30px}
+.pay-sub{margin:16px 0 10px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7a81a0}
+.pay-mobile-card .bank-chip img{height:26px;width:auto;display:block}
+.pay-mobile-card .bank-chip{height:46px;padding:0 14px}
+.pay-mobile-card .bank-chip.fill{padding:0}.pay-mobile-card .bank-chip.fill img{height:46px}
+.pay-mobile-card .bank-chip.wide img{height:20px}
+.pay-mobile-card .bank-chip.pay img[alt="eSewa"]{height:38px}.pay-mobile-card .bank-chip.pay img[alt="Khalti"]{height:42px}.pay-mobile-card .bank-chip.pay img[alt="Fonepay"]{height:26px}
+@media(prefers-reduced-motion:reduce){.bank-track{animation:none}.hero-pill{animation:none}}
+.pill-black{top:auto!important;bottom:30%}
+@media(max-width:700px){.hero-visual{width:80%!important;margin-inline:auto!important}.pill-black{bottom:34%}}
+.pay-mobile .pay-sub{white-space:nowrap}
+@media(max-width:700px){
+ .hero-pill{font-size:10.5px;padding:7px 11px}
+ .pill-green{left:6px!important;top:-14px!important;bottom:auto!important}
+ .pill-purple{left:auto!important;right:6px!important;top:-14px!important;bottom:auto!important}
+ .pill-black{right:4px!important;bottom:6px!important;top:auto!important}
+}
+.pill-black{bottom:22%!important}
+@media(max-width:700px){.pill-black{bottom:6px!important}}
+@media(min-width:701px){.pill-black{bottom:5%!important}}
+
+/* v6: mobile shows only the scrolling "We accept" bank marquee */
+@media(max-width:650px){
+ .pay-strip{display:block!important}
+ .pay-strip .pay-strip-row{padding:10px 0;gap:0}
+ .pay-strip .pay-strip-row>span{display:none}
+ .pay-strip .wrap{padding-inline:0;max-width:100%}
+ .pay-strip .bank-chip{height:44px;padding:0 14px}
+ .pay-strip .pay-strip-row .bank-chip img{height:24px}
+ .pay-strip .pay-strip-row .bank-chip.fill{padding:0}
+ .pay-strip .pay-strip-row .bank-chip.fill img{height:44px}
+ .pay-strip .pay-strip-row .bank-chip.wide img{height:18px}
+ .pay-strip .pay-strip-row .bank-chip.pay img[alt="eSewa"]{height:36px}
+ .pay-strip .pay-strip-row .bank-chip.pay img[alt="Khalti"]{height:40px}
+ .pay-strip .pay-strip-row .bank-chip.pay img[alt="Fonepay"]{height:24px}
+ .pay-mobile{display:none!important}
+}

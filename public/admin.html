@@ -20,6 +20,13 @@ button.light{background:#eef0fa;color:#33395c}button.green{background:#10a56b}bu
 .tag.verifying{background:#e0ecff;color:#1f55b8}.tag.processing{background:#efe5ff;color:#6a35c9}
 button:disabled{opacity:.6;cursor:wait}input[type=number]{font-size:16px}
 @media(max-width:560px){.wrap{padding:12px}.acts button,.acts select{flex:1 1 40%}.login{margin:40px 14px}}
+.lb{display:block;font-size:12px;font-weight:700;color:#6a7190;margin-top:10px}
+.pimg{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.pimg img{width:160px;aspect-ratio:16/10;object-fit:cover;border-radius:10px;border:1px solid #e3e6f2}
+.pimg>div{display:flex;gap:8px;flex-wrap:wrap}
+.prow{display:grid;grid-template-columns:1fr 120px 42px;gap:8px;align-items:center}.prow input{margin:3px 0}
+.mbg{position:fixed;inset:0;background:#10172b99;display:grid;place-items:center;z-index:50;padding:12px;overflow:auto}
+.mbox{background:#fff;border-radius:16px;padding:16px;width:min(560px,100%)}.mbox canvas{width:100%;aspect-ratio:16/10;border-radius:10px;border:1px solid #dde1ee;margin-top:8px;cursor:grab;background:#eef0fa}
+@media(max-width:560px){.prow{grid-template-columns:1fr 92px 40px}.pimg img{width:100%}}
 </style></head><body>
 <div id="loginBox" class="login"><h1>CheapSewa Admin</h1><p class="muted" style="margin:6px 0 10px">Sign in to manage orders, prices and stock.</p><input id="pw" type="password" placeholder="Admin password" autocomplete="current-password"><button id="loginBtn" style="width:100%;margin-top:8px">Sign in</button><p id="err" class="muted" style="color:#b02a33"></p></div>
 <div id="app" class="wrap" hidden>
@@ -54,15 +61,16 @@ async function load(){
   if(!r.ok||!j||!j.ok){showLogin("Server problem ("+r.status+"): "+((j&&j.error)||"no response")+". Check Netlify > Logs > Functions.");return}
   orders=j.orders||[];
   var u=await api("?action=users");users=((await u.json().catch(function(){return{}})).users)||[];
-  var c=await fetch("/api/catalog");ov=((await c.json().catch(function(){return{}})).overrides)||{};
+  var c=await fetch("/api/catalog",{cache:"no-store"});var cj=await c.json().catch(function(){return{}});ov=cj.overrides||{};texts=cj.texts||{};
   $("loginBox").hidden=true;$("app").hidden=false;render();
  }catch(e){showLogin("Network error: "+e.message)}
  finally{$("loginBtn").disabled=false}
 }
+var texts={};
 function render(){
- $("tabs").innerHTML=[["orders","Orders ("+orders.length+")"],["products","Products & prices"],["users","Customers ("+users.length+")"]].map(function(t){return'<button class="'+(tab===t[0]?"":"light")+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join("");
+ $("tabs").innerHTML=[["orders","Orders ("+orders.length+")"],["products","Products & prices"],["texts","Site text"],["users","Customers ("+users.length+")"]].map(function(t){return'<button class="'+(tab===t[0]?"":"light")+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join("");
  $("tabs").querySelectorAll("button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;render()}});
- if(tab==="orders")renderOrders();else if(tab==="products")renderProducts();else renderUsers();
+ if(tab==="orders")renderOrders();else if(tab==="products")renderProducts();else if(tab==="texts")renderTexts();else renderUsers();
 }
 function renderOrders(){
  var f=["all"].concat(STAGES),h='<div class="tabs">'+f.map(function(s){var n=s==="all"?orders.length:orders.filter(function(o){return o.status===s}).length;return'<button class="'+(s===filter?"":"light")+'" data-f="'+s+'">'+(NAMES[s]||"All")+" ("+n+")</button>"}).join("")+"</div>";
@@ -86,14 +94,57 @@ async function act(c,a){
  if(!r2.ok){alert("Could not update ("+r2.status+")");return}
  await load();
 }
+function effPlans(p,o){return(o.plans&&o.plans.length)?o.plans.map(function(x){return[x[0],x[1]]}):p.plans.map(function(pl,i){return[pl[0],o.prices&&o.prices[i]!=null?o.prices[i]:pl[1]]})}
+function planRow(l,pr){return'<div class="prow"><input data-pl placeholder="Plan name e.g. 2 Months" value="'+esc(l)+'"><input type="number" min="0" data-pp placeholder="NPR" value="'+Number(pr)+'"><button type="button" class="red" data-del title="Remove plan">&#10005;</button></div>'}
+function bindRows(c){c.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){if(c.querySelectorAll(".prow").length<2){alert("A product needs at least one plan.");return}b.parentNode.remove()}})}
 function renderProducts(){
- $("view").innerHTML=(window.CS_PRODUCTS||[]).map(function(p){var o=ov[p.id]||{};var oos=o.inStock===false;
-  return'<div class="card" data-p="'+p.id+'"><div class="row"><b>'+esc(p.name)+'</b><select data-stock style="width:auto;margin:0"><option value="1"'+(oos?"":" selected")+'>In stock</option><option value="0"'+(oos?" selected":"")+'>Out of stock</option></select></div>'+
-  '<div class="plans">'+p.plans.map(function(pl,i){var v=o.prices&&o.prices[i]!=null?o.prices[i]:pl[1];return'<div><label>'+esc(pl[0])+' (NPR)</label><input type="number" min="0" data-price="'+i+'" value="'+Number(v)+'"></div>'}).join("")+'</div><button data-save>Save product</button> <span class="muted" data-msg></span></div>'}).join("");
- $("view").querySelectorAll("[data-p]").forEach(function(c){c.querySelector("[data-save]").onclick=async function(){
-  var prices=[].map.call(c.querySelectorAll("[data-price]"),function(i){return Number(i.value)});
-  var r=await post({action:"setProduct",productId:Number(c.dataset.p),prices:prices,inStock:c.querySelector("[data-stock]").value==="1"});
-  c.querySelector("[data-msg]").textContent=r.ok?"Saved. Live on the site now.":"Could not save ("+r.status+")";if(r.ok)ov[c.dataset.p]={prices:prices,inStock:c.querySelector("[data-stock]").value==="1"}}});
+ $("view").innerHTML=(window.CS_PRODUCTS||[]).map(function(p){var o=ov[p.id]||{};var oos=o.inStock===false;var img=o.img||p.img;
+  return'<div class="card" data-p="'+p.id+'"><div class="pimg"><img src="'+esc(img)+'" alt=""><div><button type="button" class="light" data-img>Change / crop image</button> <button type="button" class="light" data-imgreset>Original image</button></div></div>'+
+  '<label class="lb">Product name</label><input data-name maxlength="60" value="'+esc(o.name||p.name)+'">'+
+  '<label class="lb">Description (shown on the card)</label><textarea data-desc rows="2" maxlength="220">'+esc(o.desc||p.desc)+'</textarea>'+
+  '<div class="row" style="margin-top:6px"><label class="lb" style="margin:0">Plans &amp; prices (NPR)</label><select data-stock style="width:auto;margin:0"><option value="1"'+(oos?"":" selected")+'>In stock</option><option value="0"'+(oos?" selected":"")+'>Out of stock</option></select></div>'+
+  '<div data-rows>'+effPlans(p,o).map(function(pl){return planRow(pl[0],pl[1])}).join("")+'</div>'+
+  '<div class="acts" style="margin-top:8px"><select data-quick style="width:auto;margin:0"><option value="">+ Quick add months…</option>'+[1,2,3,4,5,6,9,12,24].map(function(n){return'<option value="'+n+'">'+n+(n===1?" Month":" Months")+'</option>'}).join("")+'</select><button type="button" class="light" data-add>+ Custom plan</button></div>'+
+  '<div class="acts"><button data-save>Save product</button> <span class="muted" data-msg></span></div></div>'}).join("");
+ $("view").querySelectorAll("[data-p]").forEach(function(c){
+  var pid=Number(c.dataset.p);bindRows(c);
+  c.querySelector("[data-add]").onclick=function(){c.querySelector("[data-rows]").insertAdjacentHTML("beforeend",planRow("",0));bindRows(c)};
+  c.querySelector("[data-quick]").onchange=function(e){var n=e.target.value;if(!n)return;c.querySelector("[data-rows]").insertAdjacentHTML("beforeend",planRow(n+(n==="1"?" Month":" Months"),0));e.target.value="";bindRows(c)};
+  c.querySelector("[data-img]").onclick=function(){openCrop(pid,function(url){ov[pid]=Object.assign({},ov[pid]||{},{img:url});c.querySelector(".pimg img").src=url})};
+  c.querySelector("[data-imgreset]").onclick=async function(){if(!confirm("Go back to the original image?"))return;var r=await post({action:"resetImage",productId:pid});if(r.ok){var o2=Object.assign({},ov[pid]||{});delete o2.img;ov[pid]=o2;var pr=(window.CS_PRODUCTS||[]).filter(function(x){return x.id===pid})[0];c.querySelector(".pimg img").src=pr.img}else alert("Failed ("+r.status+")")};
+  c.querySelector("[data-save]").onclick=async function(){
+   var plans=[].map.call(c.querySelectorAll(".prow"),function(r){return{label:r.querySelector("[data-pl]").value,price:Number(r.querySelector("[data-pp]").value)}});
+   var body={action:"setProduct",productId:pid,plans:plans,name:c.querySelector("[data-name]").value,desc:c.querySelector("[data-desc]").value,inStock:c.querySelector("[data-stock]").value==="1"};
+   var r=await post(body),j=await r.json().catch(function(){return{}});
+   c.querySelector("[data-msg]").textContent=r.ok?"Saved. Live on the site now.":(j.error||"Could not save ("+r.status+")");
+   if(r.ok)ov[pid]=j.override||ov[pid]}});
+}
+var TEXTS=[["topbar","Top bar message","✨ Digital subscriptions, made simple in Nepal"],["heroBadge","Hero small badge","Your digital store in Nepal"],["heroLede","Hero paragraph","Get access to AI tools, premium subscriptions, software and digital essentials, all in one place."],["shopEyebrow","Shop small label","OUR COLLECTION"],["shopTitle","Shop title","Popular digital products"],["shopSub","Shop subtitle","Explore customer favourites and choose a plan that works for you."],["contactTitle","Help banner title","Need a hand with your order?"],["contactSub","Help banner text","Talk to our team on WhatsApp."]];
+function renderTexts(){
+ $("view").innerHTML='<div class="card"><b>Edit website text</b><p class="muted">Change the wording shown on the home page. Leave a box empty to use the original text.</p>'+TEXTS.map(function(t){return'<label class="lb">'+t[1]+'</label><textarea rows="'+(t[2].length>70?3:1)+'" maxlength="240" data-tx="'+t[0]+'" placeholder="'+esc(t[2])+'">'+esc(texts[t[0]]||"")+'</textarea>'}).join("")+'<div class="acts"><button id="saveTx">Save text</button> <span class="muted" id="txMsg"></span></div></div>';
+ $("saveTx").onclick=async function(){var o={};$("view").querySelectorAll("[data-tx]").forEach(function(e){o[e.dataset.tx]=e.value});var r=await post({action:"setTexts",texts:o});$("txMsg").textContent=r.ok?"Saved. Live on the site now.":"Could not save ("+r.status+")";if(r.ok)texts=o}
+}
+function openCrop(pid,done){
+ var m=document.createElement("div");m.className="mbg";
+ m.innerHTML='<div class="mbox"><b>Product image</b><p class="muted" style="margin:4px 0 8px">Pick a picture, drag it to position, use the slider to zoom. The frame is exactly what customers see.</p><input type="file" accept="image/*" id="cf"><canvas id="cc" width="640" height="400"></canvas><label class="lb">Zoom</label><input type="range" id="cz" min="0.4" max="4" step="0.01" value="1"><div class="acts"><button id="cs" class="green" disabled>Save image</button><button id="cx" class="light">Cancel</button></div><p class="muted" id="cm"></p></div>';
+ document.body.appendChild(m);
+ var cv=m.querySelector("#cc"),ctx=cv.getContext("2d"),CW=640,CH=400,img=null,cx=0,cy=0,z=1,base=1;
+ function clamp(){var s=base*z,hw=CW/(2*s),hh=CH/(2*s);cx=img.width<=hw*2?img.width/2:Math.min(Math.max(cx,hw),img.width-hw);cy=img.height<=hh*2?img.height/2:Math.min(Math.max(cy,hh),img.height-hh)}
+ function draw(c2,W,H){var s=base*z*(W/CW);c2.fillStyle="#fff";c2.fillRect(0,0,W,H);c2.drawImage(img,0,0,img.width,img.height,W/2-cx*s,H/2-cy*s,img.width*s,img.height*s)}
+ function paint(){if(!img){ctx.fillStyle="#eef0fa";ctx.fillRect(0,0,CW,CH);return}clamp();draw(ctx,CW,CH)}
+ paint();
+ m.querySelector("#cf").onchange=function(e){var f=e.target.files[0];if(!f)return;var im=new Image();im.onload=function(){img=im;base=Math.max(CW/im.width,CH/im.height);z=1;m.querySelector("#cz").value=1;cx=im.width/2;cy=im.height/2;m.querySelector("#cs").disabled=false;paint()};im.src=URL.createObjectURL(f)};
+ m.querySelector("#cz").oninput=function(e){z=Number(e.target.value);paint()};
+ var drag=null;cv.style.touchAction="none";
+ cv.onpointerdown=function(e){if(!img)return;drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId)};
+ cv.onpointermove=function(e){if(!drag)return;var k=CW/cv.getBoundingClientRect().width,s=base*z;cx-=(e.clientX-drag.x)*k/s;cy-=(e.clientY-drag.y)*k/s;drag={x:e.clientX,y:e.clientY};paint()};
+ cv.onpointerup=cv.onpointercancel=function(){drag=null};
+ m.querySelector("#cx").onclick=function(){m.remove()};
+ m.querySelector("#cs").onclick=async function(){
+  var out=document.createElement("canvas");out.width=800;out.height=500;draw(out.getContext("2d"),800,500);
+  var data=out.toDataURL("image/jpeg",0.86);m.querySelector("#cs").disabled=true;m.querySelector("#cm").textContent="Saving...";
+  var r=await post({action:"setImage",productId:pid,image:data}),j=await r.json().catch(function(){return{}});
+  if(r.ok){done(j.img);m.remove()}else{m.querySelector("#cm").textContent=j.error||("Failed ("+r.status+")");m.querySelector("#cs").disabled=false}}
 }
 function renderUsers(){
  $("view").innerHTML=users.length?users.map(function(u){return'<div class="card"><b>'+esc(u.name)+'</b><div class="muted">'+esc(u.email)+(u.phone?' · '+esc(u.phone):'')+'</div><div class="muted">Joined '+new Date(u.createdAt).toLocaleDateString()+'</div><div class="acts"><button class="light" data-reset="'+esc(u.email)+'">Set new password</button></div></div>'}).join("")+'<p class="muted">Passwords are stored as secure hashes and cannot be viewed by anyone, including you. If a customer forgets theirs, use Set new password and tell them the new one.</p>':'<p class="muted">No customers have registered yet.</p>';
