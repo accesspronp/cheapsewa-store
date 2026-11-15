@@ -36,11 +36,44 @@ export default safe(async (req) => {
     if (b.action === "setProduct") {
       const pid = Number(b.productId);
       if (!Number.isInteger(pid) || pid < 0) return json({ ok: false, error: "Bad product" }, 400);
-      const prices = (Array.isArray(b.prices) ? b.prices : []).slice(0, 12).map((x) => Math.round(Number(x)));
-      if (prices.some((x) => !Number.isFinite(x) || x < 0 || x > 1000000)) return json({ ok: false, error: "Invalid price" }, 400);
       const store = getStore("catalog"), ov = (await store.get("overrides", { type: "json" })) || {};
-      ov[pid] = { prices, inStock: b.inStock !== false };
+      const next = { ...(ov[pid] || {}), inStock: b.inStock !== false };
+      if (Array.isArray(b.plans)) {
+        const plans = b.plans.slice(0, 12).map((p) => [String((p && p.label) || "").trim().slice(0, 30), Math.round(Number(p && p.price))]);
+        if (!plans.length || plans.some((p) => !p[0] || !Number.isFinite(p[1]) || p[1] < 0 || p[1] > 1000000)) return json({ ok: false, error: "Every plan needs a name and a valid price" }, 400);
+        next.plans = plans; delete next.prices;
+      } else if (Array.isArray(b.prices)) {
+        const prices = b.prices.slice(0, 12).map((x) => Math.round(Number(x)));
+        if (prices.some((x) => !Number.isFinite(x) || x < 0 || x > 1000000)) return json({ ok: false, error: "Invalid price" }, 400);
+        next.prices = prices;
+      }
+      if (typeof b.name === "string") { const n = b.name.trim().slice(0, 60); if (n) next.name = n; else delete next.name; }
+      if (typeof b.desc === "string") { const d = b.desc.trim().slice(0, 220); if (d) next.desc = d; else delete next.desc; }
+      ov[pid] = next;
       await store.setJSON("overrides", ov);
+      return json({ ok: true, override: next });
+    }
+    if (b.action === "setImage" || b.action === "resetImage") {
+      const pid = Number(b.productId);
+      if (!Number.isInteger(pid) || pid < 0) return json({ ok: false, error: "Bad product" }, 400);
+      const store = getStore("catalog"), imgs = getStore("productimg"), ov = (await store.get("overrides", { type: "json" })) || {};
+      const next = { ...(ov[pid] || {}) };
+      if (b.action === "resetImage") { await imgs.delete("p" + pid); delete next.img; }
+      else {
+        const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(b.image || ""));
+        if (!m || m[2].length > 1200000) return json({ ok: false, error: "Image missing or too large" }, 400);
+        const v = Date.now();
+        await imgs.setJSON("p" + pid, { mime: m[1], b64: m[2], v });
+        next.img = "/api/product-img?id=" + pid + "&v=" + v;
+      }
+      ov[pid] = next; await store.setJSON("overrides", ov);
+      return json({ ok: true, img: next.img || "" });
+    }
+    if (b.action === "setTexts") {
+      const ALLOWED = ["topbar", "heroBadge", "heroLede", "shopEyebrow", "shopTitle", "shopSub", "contactTitle", "contactSub"];
+      const store = getStore("catalog"), out = {};
+      for (const k of ALLOWED) { const v = String((b.texts && b.texts[k]) || "").trim().slice(0, 240); if (v) out[k] = v; }
+      await store.setJSON("texts", out);
       return json({ ok: true });
     }
     if (b.action === "resetUser") {
