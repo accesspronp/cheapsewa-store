@@ -12,7 +12,7 @@ FEATURES
 - CheapSewa.Store logo and Nepal-focused copy
 - Search, categories, product plan selector, cart and checkout UI
 - Payment method choices: eSewa, Khalti, bank transfer and Fonepay
-- WhatsApp order-message handoff to +977 9716537747
+- WhatsApp order-message handoff to +977 9717647043
 - FAQ, about, reviews, contact and mobile navigation
 
 IMPORTANT LIMITATIONS
@@ -70,7 +70,7 @@ IMPORTANT: This remains a static front-end preview. The transaction code and scr
 CHECKOUT POPUP + WHATSAPP REDIRECT UPDATE
 - Product page: "Continue to amount" opens a checkout popup (summary + total, then eSewa / Khalti / Fonepay / Bank transfer).
 - After choosing a method, the payment QR (assets/payment-qr.png) and 15-minute timer appear with the screenshot upload right below.
-- "Verify payment" unlocks only after a screenshot is selected, then sends the customer straight to WhatsApp (+977 9716537747) with name, phone, product, plan, total and method pre-filled.
+- "Verify payment" unlocks only after a screenshot is selected, then sends the customer straight to WhatsApp (+977 9717647043) with name, phone, product, plan, total and method pre-filled.
 - Same simplified step 4 applied to the homepage cart checkout.
 - Fixed: WhatsApp message previously showed literal "\n" text instead of line breaks.
 - LIMITATION: WhatsApp links cannot attach images automatically. The customer attaches the screenshot in the chat. Automatic upload/verification needs a backend or WhatsApp Business API.

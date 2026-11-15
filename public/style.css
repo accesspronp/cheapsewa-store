@@ -459,3 +459,63 @@ img,video,svg,iframe { max-width:100%; }
 .cart-plan{max-width:100%}.cart-info{min-width:0}
 body:has(.cart-drawer.open) .mobile-bottom-nav{display:none}
 @media(max-width:700px){.cart-plan{font-size:13px}.cart-row{grid-template-columns:1fr auto;gap:8px}}
+
+/* ===================== v9 additions ===================== */
+/* --- Blue pills on product boxes --- */
+.pill-stack{position:absolute;top:10px;right:10px;z-index:2;display:flex;flex-direction:column;align-items:flex-end;gap:5px;pointer-events:none}
+.blue-pill{background:linear-gradient(135deg,#1f6bff,#0b4fe0);color:#fff;font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;line-height:1;padding:5px 8px;border-radius:6px;box-shadow:0 4px 10px #0b4fe038;white-space:nowrap}
+.buy-art .pill-stack{top:14px;right:14px}.buy-art .blue-pill{font-size:11px;padding:6px 10px}
+@media(max-width:700px){.blue-pill{font-size:8.5px;padding:4px 6px;letter-spacing:.2px}.pill-stack{top:8px;right:8px;gap:4px}}
+
+/* --- Instant delivery note on the buying page --- */
+.instant-note{display:flex;gap:12px;align-items:center;margin:16px 0 4px;padding:13px 15px;border-radius:14px;background:linear-gradient(135deg,#e9f1ff,#eefdf8);border:1px solid #cfe0ff}
+.instant-note .instant-ic{flex:none;width:36px;height:36px;border-radius:10px;background:#1f6bff;color:#fff;display:grid;place-items:center;font-size:18px}
+.instant-note b{display:block;font-size:14px;color:#0b3fb0}.instant-note small{display:block;color:#53607a;font-size:12px;line-height:1.5;margin-top:2px}.instant-note a{color:#1f6bff;font-weight:700}
+
+/* --- Email links --- */
+.mail-link{display:block;margin-top:6px}.mail-line{margin-top:6px}.mail-line a,.faq-list a{color:var(--purple);font-weight:700}
+
+/* --- Profile avatar (top corner) + menu --- */
+.cs-user{position:relative;display:inline-flex;align-items:center;flex:none}
+.cs-avatar-btn{width:40px;height:40px;padding:0;border:2px solid #fff;border-radius:50%;background:#efeaff;box-shadow:0 0 0 2px #6738ed,0 6px 16px #6738ed33;cursor:pointer;overflow:hidden;display:block;transition:transform .15s}
+.cs-avatar-btn:hover{transform:scale(1.07)}
+.cs-av{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.cs-nav-av{display:block;width:26px;height:26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px #16e6c0}
+.cs-backdrop{position:fixed;inset:0;z-index:10000;background:#0b0f2200;display:none}
+.cs-menu{position:fixed;z-index:10001;width:290px;background:#fff;border:1px solid #e9edf5;border-radius:18px;box-shadow:0 24px 60px #1d125a33;padding:16px;opacity:0;transform:translateY(-8px) scale(.97);pointer-events:none;transition:opacity .18s,transform .18s;top:70px;right:16px}
+.cs-menu.open{opacity:1;transform:none;pointer-events:auto}
+.cs-m-top{display:flex;gap:12px;align-items:center;padding-bottom:12px;border-bottom:1px solid #eef0f6;margin-bottom:10px}
+.cs-m-av{width:48px;height:48px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px #6738ed;flex:none}
+.cs-m-who{min-width:0}.cs-m-who b{display:block;font-size:15px;color:#10152b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cs-m-who small{display:block;color:#7a81a0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-m-edit label{display:block;font-size:12px;font-weight:700;color:#4b5170;margin:4px 0 6px}
+.cs-m-edit input{width:100%;padding:11px 12px;border:1.5px solid #dfe2f0;border-radius:11px;font-size:16px;outline:0;font-family:inherit}.cs-m-edit input:focus{border-color:#6738ed}
+.cs-m-err{color:#c92a35;font-size:12px;min-height:16px;margin:6px 0 0}
+.cs-m-row{display:flex;gap:8px;margin-top:6px}
+.cs-m-btn{border:0;background:#eeeaff;color:#5b3df5;font-weight:700;font-size:13px;padding:10px 14px;border-radius:10px;cursor:pointer;font-family:inherit}.cs-m-btn.pri{background:#6738ed;color:#fff;flex:1}.cs-m-btn:disabled{opacity:.6}
+.cs-m-edit>.cs-m-btn{width:100%;text-align:left}
+.cs-m-link{display:block;width:100%;text-align:left;border:0;background:transparent;padding:11px 6px;font-size:14px;font-weight:600;color:#10152b;border-radius:10px;cursor:pointer;font-family:inherit;margin-top:4px}.cs-m-link:hover{background:#f5f3ff}.cs-m-link.out{color:#c92a35}
+.cs-toast{position:fixed;z-index:10020;left:50%;bottom:90px;transform:translate(-50%,20px);opacity:0;background:#111a2f;color:#fff;padding:12px 20px;border-radius:25px;font-size:13px;font-weight:600;transition:.25s;pointer-events:none;box-shadow:0 10px 30px #0004}.cs-toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:700px){
+ .cs-avatar-btn{width:34px;height:34px;box-shadow:0 0 0 2px #6738ed}
+ .cs-backdrop.show{display:block;background:#0b0f2288}
+ .cs-menu{left:0;right:0!important;top:auto!important;bottom:0;width:auto;border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);opacity:1;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+ .cs-menu.open{transform:none}
+}
+
+/* --- Page-opening animation (plays once per visit, and after every sign-in) --- */
+html{--d:0s}html.cs-curtain{--d:.8s}
+html.cs-curtain::before{content:"";position:fixed;inset:0;z-index:100000;background:linear-gradient(135deg,#5b2de8,#7c5cff 60%,#05c8e8);animation:csCurtain .85s .35s cubic-bezier(.77,0,.18,1) forwards;pointer-events:none}
+html.cs-curtain::after{content:"";position:fixed;left:50%;top:50%;width:92px;height:92px;margin:-46px 0 0 -46px;z-index:100001;background:url(assets/favicon-192.png) center/contain no-repeat;border-radius:22px;box-shadow:0 14px 40px #0004;animation:csLogo .8s ease forwards;pointer-events:none}
+@keyframes csCurtain{to{transform:translateX(-102%)}}
+@keyframes csLogo{0%{opacity:0;transform:scale(.6)}35%{opacity:1;transform:scale(1)}75%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15) translateX(-40px)}}
+/* poster slides in from the right and settles */
+.hero-subbd-layout .hero-slides{animation:csPoster 1.05s var(--d) cubic-bezier(.16,.84,.24,1) both}
+@keyframes csPoster{from{opacity:0;transform:translateX(170px)}to{opacity:1;transform:none}}
+.hero-copy>*{animation:csRise .7s cubic-bezier(.2,.8,.2,1) both}
+.hero-copy>*:nth-child(1){animation-delay:calc(var(--d) + .05s)}.hero-copy>*:nth-child(2){animation-delay:calc(var(--d) + .12s)}.hero-copy>*:nth-child(3){animation-delay:calc(var(--d) + .2s)}.hero-copy>*:nth-child(4){animation-delay:calc(var(--d) + .28s)}.hero-copy>*:nth-child(5){animation-delay:calc(var(--d) + .36s)}
+@keyframes csRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+/* carousel: clearer right-to-left slide */
+.hero-subbd-layout .hero-slide{transform:translateX(90px) scale(.965)}
+.hero-subbd-layout .hero-slide.exit-left{transform:translateX(-90px) scale(.965)}
+.hero-subbd-layout .hero-slide.active{transform:translateX(0) scale(1)}
+@media(prefers-reduced-motion:reduce){html.cs-curtain::before,html.cs-curtain::after{display:none}.hero-subbd-layout .hero-slides,.hero-copy>*{animation:none}}

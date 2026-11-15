@@ -18,6 +18,15 @@
   };
   CS.find = function (id) { return (window.CS_PRODUCTS || []).filter(function (p) { return p.id === Number(id); })[0]; };
 
+  /* Small blue pills shown on product boxes. Give a product its own list with  pills:["Sale","Cheap"]  in products-data.js to override. */
+  CS.PILL_EXTRA = ["Special offer", "Cheap"];
+  CS.pills = function (p) {
+    if (Array.isArray(p.pills)) return p.pills.slice(0, 2);
+    var ch = CS.cheapest(p);
+    return [CS.onSale(ch) ? CS.pct(ch) + "% OFF" : "Sale", CS.PILL_EXTRA[Number(p.id) % CS.PILL_EXTRA.length]];
+  };
+  CS.pillHtml = function (p) { return '<span class="pill-stack">' + CS.pills(p).map(function (t) { return '<span class="blue-pill">' + CS.esc(t) + "</span>"; }).join("") + "</span>"; };
+
   /* Brand-coloured tile used when an image link is missing or blocked */
   CS.fb = function (p) {
     var c = (p && p.color) || "#6740ed", t = String((p && (p.symbol || p.name)) || "?").trim().slice(0, 2).toUpperCase();

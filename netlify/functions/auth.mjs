@@ -17,6 +17,14 @@ export default safe(async (req) => {
     const u = await userFrom(req);
     return u ? json({ ok: true, user: { name: u.name, email: u.email } }) : json({ ok: false, error: "Not signed in" }, 401);
   }
+  if (b.action === "updateName") {
+    const u = await userFrom(req);
+    if (!u) return json({ ok: false, error: "Not signed in" }, 401);
+    const name = clean(b.name, 80);
+    if (name.length < 2) return json({ ok: false, error: "Name must be at least 2 characters" }, 400);
+    await users.setJSON(ekey(u.email), { ...u, name });
+    return json({ ok: true, user: { name, email: u.email } });
+  }
   const email = clean(b.email, 120).toLowerCase(), password = String(b.password || "");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({ ok: false, error: "Enter a valid email" }, 400);
 

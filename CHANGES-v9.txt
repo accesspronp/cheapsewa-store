@@ -1,0 +1,16 @@
+CHEAPSEWA v9 - WHAT CHANGED
+===========================
+1. WhatsApp number is now 9717647043 (wa.me/9779717647043) everywhere.
+2. Support email support@cheapsewa.store added: footer, contact section, FAQ, product page, account page.
+3. Favicon = your purple/cyan bag "C" logo (assets/favicon-*.png, favicon.ico, apple-touch-icon.png).
+4. After sign in / sign up the customer is sent to the home page, with a page-opening
+   animation (purple curtain slides off to the left, poster slides in from the right) and a "Welcome" message.
+   The opening animation also plays once at the start of every visit.
+5. Signed-in customers see a round profile picture in the top corner (mobile + PC).
+   Tap it: edit name, My orders, Log out. Only the NAME can be changed (email and picture are fixed).
+   The picture is the same for everyone (AVATAR constant at the top of public/auth-ui.js and in account.html).
+6. Small blue pills (Sale / 30% OFF / Special offer / Cheap) at the top-right of product boxes and product page.
+   Change the wording in catalog-client.js (CS.PILL_EXTRA) or per product with  pills:["Sale","Cheap"]  in products-data.js.
+7. Product buying page: "Instant delivery after payment" box + badge.
+
+DEPLOY: upload the whole folder to Netlify as before (the sign-in name change needs the updated netlify/functions/auth.mjs).

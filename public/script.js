@@ -9,7 +9,7 @@ function renderProducts(){
  if(sort==="low")list.sort((a,b)=>low(a)-low(b));if(sort==="high")list.sort((a,b)=>low(b)-low(a));if(sort==="az")list.sort((a,b)=>a.name.localeCompare(b.name));
  $("#productGrid").innerHTML=list.map(p=>{
   const ch=CS.cheapest(p),sale=CS.onSale(ch),out=!CS.prodOk(p),tag=p.badge||(sale?"Save "+CS.pct(ch)+"%":"");
-  return `<article class="product-card"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${esc(p.name)} plans"><div class="product-art" style="--art:${esc(p.color)}"><span class="product-cat">${esc(p.cat)}</span>${out?'<span class="oos">Out of stock</span>':(tag?`<span class="deal-tag">${esc(tag)}</span>`:"")}${CS.img(p,"product-img")}</div><div class="product-body"><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p><div class="product-foot"><span class="price">${sale?`<s class="was">${money(ch[1])}</s> `:""}${money(CS.eff(ch))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`}).join("");
+  return `<article class="product-card"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${esc(p.name)} plans"><div class="product-art" style="--art:${esc(p.color)}"><span class="product-cat">${esc(p.cat)}</span>${out?'<span class="oos">Out of stock</span>':(CS.pillHtml(p)+(tag?`<span class="deal-tag">${esc(tag)}</span>`:""))}${CS.img(p,"product-img")}</div><div class="product-body"><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p><div class="product-foot"><span class="price">${sale?`<s class="was">${money(ch[1])}</s> `:""}${money(CS.eff(ch))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`}).join("");
  $("#emptyState").hidden=!!list.length;
 }
 function setCategory(c){activeCategory=c;$$("[data-cat]").forEach(b=>b.classList.toggle("active",b.dataset.cat===c));renderProducts();$("#categoryMenu").classList.remove("show");document.querySelector("#shop").scrollIntoView({behavior:"smooth"})}
@@ -129,7 +129,7 @@ $("#checkoutVerifyBtn").addEventListener("click",async()=>{
   stopPaymentTimer();
   const msg=`Hello CheapSewa! I have paid.\nOrder ID: ${id}\nName: ${fd.get("name")}\nTotal: ${money(totalCart())}`;
   const phone=fd.get("phone");CS.cart.save([]);coupon=null;saveCoupon();$("#couponInput").value="";couponMsg("",true);renderCart();
-  window.CSOrder.done($("#checkoutStep4"),id,{phone:phone,wa:"https://wa.me/9779716537747?text="+encodeURIComponent(msg)});
+  window.CSOrder.done($("#checkoutStep4"),id,{phone:phone,wa:"https://wa.me/9779717647043?text="+encodeURIComponent(msg)});
  }catch(err){
   console.error(err);btn.disabled=false;btn.innerHTML="Verify payment <span>→</span>";
   alert((err&&err.message)||"Could not save your order. Please try again.");
