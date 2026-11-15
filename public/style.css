@@ -429,3 +429,33 @@ img,video,svg,iframe { max-width:100%; }
  .pay-strip .pay-strip-row .bank-chip.pay img[alt="Fonepay"]{height:24px}
  .pay-mobile{display:none!important}
 }
+
+/* ===== v8: sales, cart plans, coupons, per-plan stock ===== */
+.was{color:#9aa2b3;font-weight:600;font-size:.82em;text-decoration:line-through}
+.price .was{display:block;margin:0 0 1px}
+.deal-tag{position:absolute;left:10px;bottom:10px;z-index:2;background:linear-gradient(135deg,#ff5a36,#ff2e63);color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;box-shadow:0 4px 12px #ff2e6340}
+.cart-row{align-items:start}.cart-info{display:grid;gap:6px;min-width:0}.cart-info b{font-size:13px}
+.cart-plan-label{display:grid;gap:3px;font-size:10px;color:#81899a;font-weight:600}
+.cart-plan{width:100%;max-width:230px;border:1px solid var(--line);border-radius:9px;padding:7px 8px;font:inherit;font-size:12px;color:#1b2340;background:#fff}
+.cart-side{display:grid;gap:8px;justify-items:end}.cart-side .line-total{font-size:13px}
+.cart-rm{border:0;background:none;color:#d9464e;font-size:11px;font-weight:700;cursor:pointer;padding:0}
+.cart-row.is-oos{background:#fff5f5;border-radius:10px;padding-left:8px;padding-right:8px}.cart-warn{color:#d9464e;font-weight:700}
+.qty button{cursor:pointer}
+.coupon-box{margin-bottom:12px}.coupon-row{display:flex;gap:8px}.coupon-row input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;text-transform:uppercase}
+.coupon-row input[readonly]{background:#f3f6f4;color:#0b7a4d;font-weight:700}
+.coupon-row button{border:0;border-radius:10px;padding:0 16px;background:#111a2f;color:#fff;font-weight:700;font-size:12px;cursor:pointer}
+.coupon-msg{font-size:11px;margin-top:6px;min-height:0}.coupon-msg.ok{color:#0b7a4d;font-weight:700}.coupon-msg.bad{color:#d9464e;font-weight:700}
+.total-line.sub{font-size:12px;color:#6b7386;margin-bottom:8px}.total-line.disc b{color:#0b7a4d}
+#checkoutBtn:disabled{opacity:.5;cursor:not-allowed}
+.buy-plan.is-oos{opacity:.55;cursor:not-allowed;background:#f7f7fa}
+.buy-plan .plan-price{display:grid;justify-items:end;gap:2px}.buy-plan .plan-price s{font-size:11px;color:#9aa2b3;font-weight:600}
+.sale-chip{display:inline-block;background:#e6f8ee;color:#0b7a4d;font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:6px}
+.oos-chip{display:inline-block;background:#fde2e4;color:#b02a33;font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:6px}
+.buy-badge{display:inline-block;background:linear-gradient(135deg,#ff5a36,#ff2e63);color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:99px;margin-bottom:10px}
+.buy-actions{display:grid;gap:10px;margin:16px 0 4px}.buy-actions .cart-link{text-align:center;font-size:12px;font-weight:700;color:var(--purple)}
+.buy-or{display:flex;align-items:center;gap:10px;color:#9aa2b3;font-size:11px;font-weight:700;margin:16px 0 4px}.buy-or:before,.buy-or:after{content:"";flex:1;height:1px;background:var(--line)}
+.secondary-btn{border:2px solid var(--purple);background:#fff;color:var(--purple);border-radius:14px;padding:14px 18px;font-weight:800;font-size:14px;cursor:pointer;transition:.15s}.secondary-btn:hover{background:#f8f5ff}.secondary-btn:disabled{opacity:.5;cursor:not-allowed}
+.total-line[hidden]{display:none}
+.cart-plan{max-width:100%}.cart-info{min-width:0}
+body:has(.cart-drawer.open) .mobile-bottom-nav{display:none}
+@media(max-width:700px){.cart-plan{font-size:13px}.cart-row{grid-template-columns:1fr auto;gap:8px}}

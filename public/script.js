@@ -1,18 +1,69 @@
 const products=window.CS_PRODUCTS;
-let cart=[],activeCategory="All",selectedProduct=null;
+let activeCategory="All",coupon=null;const esc=CS.esc;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const money=n=>"NPR "+Number(n).toLocaleString("en-IN");
 function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2300)}
-function renderProducts(){let list=products.filter(p=>(activeCategory==="All"||p.cat===activeCategory||(activeCategory==="Design"&&p.cat==="Design"))&&(`${p.name} ${p.cat} ${p.desc}`).toLowerCase().includes($("#searchInput").value.toLowerCase()));const sort=$("#sortSelect").value;if(sort==="low")list.sort((a,b)=>Math.min(...a.plans.map(x=>x[1]))-Math.min(...b.plans.map(x=>x[1])));if(sort==="high")list.sort((a,b)=>Math.min(...b.plans.map(x=>x[1]))-Math.min(...a.plans.map(x=>x[1])));if(sort==="az")list.sort((a,b)=>a.name.localeCompare(b.name));$("#productGrid").innerHTML=list.map(p=>`<article class="product-card"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${p.name} plans"><div class="product-art" style="--art:${p.color}"><span class="product-cat">${p.cat}</span>${p.inStock===false?'<span class="oos">Out of stock</span>':''}<img class="product-img" src="${p.img}" alt="${p.name}" loading="lazy"></div><div class="product-body"><h3>${p.name}</h3><p>${p.desc}</p><div class="product-foot"><span class="price">${money(Math.min(...p.plans.map(x=>x[1])))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`).join("");$("#emptyState").hidden=!!list.length;}
+function renderProducts(){
+ const q=$("#searchInput").value.toLowerCase(),sort=$("#sortSelect").value,low=p=>CS.eff(CS.cheapest(p));
+ let list=products.filter(p=>(activeCategory==="All"||p.cat===activeCategory)&&(`${p.name} ${p.cat} ${p.desc}`).toLowerCase().includes(q));
+ if(sort==="low")list.sort((a,b)=>low(a)-low(b));if(sort==="high")list.sort((a,b)=>low(b)-low(a));if(sort==="az")list.sort((a,b)=>a.name.localeCompare(b.name));
+ $("#productGrid").innerHTML=list.map(p=>{
+  const ch=CS.cheapest(p),sale=CS.onSale(ch),out=!CS.prodOk(p),tag=p.badge||(sale?"Save "+CS.pct(ch)+"%":"");
+  return `<article class="product-card"><a class="product-card-link" href="product.html?id=${p.id}" aria-label="View ${esc(p.name)} plans"><div class="product-art" style="--art:${esc(p.color)}"><span class="product-cat">${esc(p.cat)}</span>${out?'<span class="oos">Out of stock</span>':(tag?`<span class="deal-tag">${esc(tag)}</span>`:"")}${CS.img(p,"product-img")}</div><div class="product-body"><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p><div class="product-foot"><span class="price">${sale?`<s class="was">${money(ch[1])}</s> `:""}${money(CS.eff(ch))}<small>Starting price</small></span><span class="add-btn">View plans +</span></div></div></a></article>`}).join("");
+ $("#emptyState").hidden=!!list.length;
+}
 function setCategory(c){activeCategory=c;$$("[data-cat]").forEach(b=>b.classList.toggle("active",b.dataset.cat===c));renderProducts();$("#categoryMenu").classList.remove("show");document.querySelector("#shop").scrollIntoView({behavior:"smooth"})}
-function openProduct(id){selectedProduct=products.find(p=>p.id===id);$("#productModalBody").innerHTML=`<div class="modal-product-head"><img class="modal-product-img" src="${selectedProduct.img}" alt=""><div><h2>${selectedProduct.name}</h2><p>${selectedProduct.desc}</p></div></div><span class="eyebrow">CHOOSE YOUR PLAN</span><div class="plan-list">${selectedProduct.plans.map((pl,i)=>`<label class="plan-choice"><span><b>${pl[0]}</b><small>${i===0?"Popular choice":"Digital subscription plan"}</small></span><strong>${money(pl[1])}</strong><input type="radio" name="plan" value="${i}" ${i===0?"checked":""}></label>`).join("")}</div><button class="primary-btn full" id="addSelected">Add to cart <span>➜</span></button>`;showModal("#productModal");$("#addSelected").onclick=()=>{let i=+$('input[name="plan"]:checked').value;addCart(selectedProduct,selectedProduct.plans[i]);closeModals()}}
-function addCart(p,plan){if(p.inStock===false){toast("Sorry, this product is out of stock");return}let key=p.id+"-"+plan[0],item=cart.find(x=>x.key===key);if(item)item.qty++;else cart.push({key,id:p.id,name:p.name,plan:plan[0],price:plan[1],qty:1});renderCart();toast("Added to cart")}
-function renderCart(){let count=cart.reduce((s,x)=>s+x.qty,0),total=cart.reduce((s,x)=>s+x.price*x.qty,0);$("#cartCount").textContent=count;$("#drawerCount").textContent="("+count+")";$("#cartTotal").textContent=money(total);$("#cartItems").innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><div><b>${x.name}</b><small>${x.plan} · ${money(x.price)}</small><small>${money(x.price*x.qty)}</small></div><div class="qty"><button data-dec="${x.key}">−</button><b>${x.qty}</b><button data-inc="${x.key}">+</button></div></div>`).join(""):'<div class="empty-state">Your cart is empty.<br>Explore products to get started.</div>';$$("[data-inc]").forEach(b=>b.onclick=()=>{cart.find(x=>x.key===b.dataset.inc).qty++;renderCart()});$$("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart.find(x=>x.key===b.dataset.dec);x.qty--;if(x.qty<=0)cart=cart.filter(y=>y!==x);renderCart()})}
+/* ---- Cart: lines live in localStorage (shared with product pages) ---- */
+function cartLines(){return CS.cart.load().map(l=>{const p=products.find(x=>x.id===l.id),pl=p&&p.plans.find(x=>x[0]===l.plan);return pl?{p,pl,qty:Math.max(1,Math.min(10,l.qty|0)),ok:CS.prodOk(p)&&CS.planOk(pl)}:null}).filter(Boolean)}
+function saveLines(ls){CS.cart.save(ls.map(x=>({id:x.p.id,plan:x.pl[0],qty:x.qty})))}
+function subtotal(ls){return ls.reduce((s,x)=>s+CS.eff(x.pl)*x.qty,0)}
+function discountOf(sub){return coupon?Math.round(sub*coupon.percent/100):0}
+
+function renderCart(){
+ const ls=cartLines(),count=ls.reduce((s,x)=>s+x.qty,0),sub=subtotal(ls),disc=discountOf(sub);
+ if(ls.length!==CS.cart.load().length)saveLines(ls);
+ $("#cartCount").textContent=count;$("#drawerCount").textContent="("+count+")";
+ $("#cartSub").textContent=money(sub);$("#cartTotal").textContent=money(sub-disc);
+ $("#cartDiscRow").hidden=!disc;$("#cartDisc").textContent="− "+money(disc);
+ $("#cartItems").innerHTML=ls.length?ls.map(x=>`<div class="cart-row${x.ok?"":" is-oos"}" data-k="${esc(x.p.id+"|"+x.pl[0])}"><div class="cart-info"><b>${esc(x.p.name)}</b><label class="cart-plan-label">Choose plan / months<select class="cart-plan">${x.p.plans.map(pl=>`<option value="${esc(pl[0])}"${pl[0]===x.pl[0]?" selected":""}${CS.planOk(pl)||pl[0]===x.pl[0]?"":" disabled"}>${esc(pl[0])} · ${money(CS.eff(pl))}${CS.planOk(pl)?"":" (out of stock)"}</option>`).join("")}</select></label><small>${CS.onSale(x.pl)?`<s class="was">${money(x.pl[1])}</s> `:""}${money(CS.eff(x.pl))} each${x.ok?"":' · <span class="cart-warn">Out of stock: pick another plan or remove</span>'}</small></div><div class="cart-side"><div class="qty"><button type="button" data-dec aria-label="Less">−</button><b>${x.qty}</b><button type="button" data-inc aria-label="More">+</button></div><b class="line-total">${money(CS.eff(x.pl)*x.qty)}</b><button type="button" class="cart-rm" data-rm>Remove</button></div></div>`).join(""):'<div class="empty-state">Your cart is empty.<br>Explore products to get started.</div>';
+ $("#checkoutBtn").disabled=!ls.length||ls.some(x=>!x.ok);
+ $("#couponInput").readOnly=!!coupon;$("#couponBtn").textContent=coupon?"Remove":"Apply";
+}
+$("#cartItems").addEventListener("click",e=>{
+ const row=e.target.closest(".cart-row");if(!row)return;
+ const ls=cartLines(),x=ls.find(y=>y.p.id+"|"+y.pl[0]===row.dataset.k);if(!x)return;
+ if(e.target.closest("[data-inc]"))x.qty=Math.min(10,x.qty+1);else if(e.target.closest("[data-dec]"))x.qty--;else if(e.target.closest("[data-rm]"))x.qty=0;else return;
+ saveLines(ls.filter(y=>y.qty>0));
+});
+$("#cartItems").addEventListener("change",e=>{
+ if(!e.target.classList.contains("cart-plan"))return;
+ const row=e.target.closest(".cart-row"),ls=cartLines(),x=ls.find(y=>y.p.id+"|"+y.pl[0]===row.dataset.k);if(!x)return;
+ x.pl=x.p.plans.find(pl=>pl[0]===e.target.value)||x.pl;
+ const merged=[];ls.forEach(y=>{const m=merged.find(z=>z.p.id===y.p.id&&z.pl[0]===y.pl[0]);if(m)m.qty=Math.min(10,m.qty+y.qty);else merged.push(y)});
+ saveLines(merged);
+});
+document.addEventListener("cs-cart",renderCart);
+window.addEventListener("storage",e=>{if(e.key==="cs_cart_v2")renderCart()});
+/* ---- Coupon ---- */
+function couponMsg(t,good){const m=$("#couponMsg");m.textContent=t;m.className="coupon-msg "+(good?"ok":"bad")}
+function saveCoupon(){try{coupon?localStorage.setItem("cs_coupon",coupon.code):localStorage.removeItem("cs_coupon")}catch(e){}}
+async function applyCoupon(code,silent){
+ code=String(code||"").trim().toUpperCase();
+ if(!code){coupon=null;saveCoupon();couponMsg("",true);renderCart();return}
+ try{
+  const r=await fetch("/api/coupon",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code})}),j=await r.json();
+  if(j.ok){coupon={code:j.code,percent:j.percent};couponMsg("Coupon "+j.code+" applied: "+j.percent+"% off",true)}
+  else{coupon=null;if(!silent)couponMsg(j.error||"This coupon is not valid",false)}
+ }catch(e){if(!silent)couponMsg("Could not check the coupon. Please try again.",false)}
+ saveCoupon();renderCart();
+}
+$("#couponBtn").addEventListener("click",()=>{if(coupon){$("#couponInput").value="";applyCoupon("")}else applyCoupon($("#couponInput").value)});
+$("#couponInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#couponBtn").click()}});
 function openCart(){closeModals();$("#cartDrawer").classList.add("open");$("#overlay").classList.add("show")}
 function showModal(id){$("#overlay").classList.add("show");$(id).classList.add("show")}
 function closeModals(){$("#overlay").classList.remove("show");$("#cartDrawer").classList.remove("open");$$(".modal").forEach(m=>m.classList.remove("show"))}
 let paymentTimer=null,paymentSeconds=900,paymentExpired=false;
-function totalCart(){return cart.reduce((sum,item)=>sum+item.price*item.qty,0)}
+function totalCart(){const s=subtotal(cartLines());return s-discountOf(s)}
 function setCheckoutStep(step){
  $$(".pay-step").forEach((el,i)=>{el.hidden=(i+1)!==step;el.classList.toggle("is-active",(i+1)===step)});
  $("#checkoutModal").scrollTo({top:0,behavior:"smooth"});
@@ -33,10 +84,12 @@ function updatePaymentTimer(){
  $("#checkoutCountdown").textContent=mm+":"+ss;
 }
 function checkout(){
- if(!cart.length){toast("Your cart is empty");return}
- const total=totalCart();
- $("#checkoutSummary").innerHTML=`<div class="checkout-summary">${cart.map(x=>`<div><span>${x.name} · ${x.plan} × ${x.qty}</span><b>${money(x.price*x.qty)}</b></div>`).join("")}<hr><div><b>Total</b><b>${money(total)}</b></div></div>`;
- $("#amountConfirmation").innerHTML=`<div class="amount-line"><span>Selected items</span><b>${cart.reduce((s,x)=>s+x.qty,0)}</b></div><div class="amount-line amount-grand"><span>Amount to pay</span><strong>${money(total)}</strong></div>`;
+ const ls=cartLines();
+ if(!ls.length){toast("Your cart is empty");return}
+ if(ls.some(x=>!x.ok)){toast("Remove or change the out-of-stock item first");return}
+ const sub=subtotal(ls),disc=discountOf(sub),total=sub-disc;
+ $("#checkoutSummary").innerHTML=`<div class="checkout-summary">${ls.map(x=>`<div><span>${esc(x.p.name)} · ${esc(x.pl[0])} × ${x.qty}</span><b>${money(CS.eff(x.pl)*x.qty)}</b></div>`).join("")}${disc?`<div><span>Coupon ${esc(coupon.code)} (${coupon.percent}% off)</span><b>− ${money(disc)}</b></div>`:""}<hr><div><b>Total</b><b>${money(total)}</b></div></div>`;
+ $("#amountConfirmation").innerHTML=`<div class="amount-line"><span>Selected items</span><b>${ls.reduce((s,x)=>s+x.qty,0)}</b></div>${disc?`<div class="amount-line"><span>Discount (${esc(coupon.code)})</span><b>− ${money(disc)}</b></div>`:""}<div class="amount-line amount-grand"><span>Amount to pay</span><strong>${money(total)}</strong></div>`;
  $("#paymentFinalSummary").textContent="Total due: "+money(total);
  $("#checkoutForm").reset();stopPaymentTimer();$("#acceptAmount").checked=false;$("#amountAcceptBtn").disabled=true;
  setCheckoutStep(1);closeModals();showModal("#checkoutModal");
@@ -69,13 +122,13 @@ $("#checkoutVerifyBtn").addEventListener("click",async()=>{
  if(paymentExpired){toast("Your 15-minute payment session expired");return}
  const file=$("#proofInput").files[0];if(!file){toast("Please select your payment screenshot");return}
  const fd=new FormData($("#checkoutForm"));
- const items=cart.map(x=>`${x.name} (${x.plan}) x ${x.qty}`).join(", ");
+ const ls=cartLines(),items=ls.map(x=>`${x.p.name} (${x.pl[0]}) x ${x.qty}`).join(", ");
  const btn=$("#checkoutVerifyBtn");btn.disabled=true;btn.textContent="Saving your order…";
  try{
-  const id=await window.CSOrder.submit({name:fd.get("name"),phone:fd.get("phone"),product:items,plan:"Cart order",amount:totalCart(),method:fd.get("payment"),productIds:cart.map(x=>x.id)},file);
+  const id=await window.CSOrder.submit({name:fd.get("name"),phone:fd.get("phone"),product:items,plan:"Cart order",amount:totalCart(),method:fd.get("payment"),items:ls.map(x=>({id:x.p.id,plan:x.pl[0],qty:x.qty})),coupon:coupon?coupon.code:""},file);
   stopPaymentTimer();
   const msg=`Hello CheapSewa! I have paid.\nOrder ID: ${id}\nName: ${fd.get("name")}\nTotal: ${money(totalCart())}`;
-  const phone=fd.get("phone");cart=[];renderCart();
+  const phone=fd.get("phone");CS.cart.save([]);coupon=null;saveCoupon();$("#couponInput").value="";couponMsg("",true);renderCart();
   window.CSOrder.done($("#checkoutStep4"),id,{phone:phone,wa:"https://wa.me/9779716537747?text="+encodeURIComponent(msg)});
  }catch(err){
   console.error(err);btn.disabled=false;btn.innerHTML="Verify payment <span>→</span>";
@@ -85,7 +138,12 @@ $("#checkoutVerifyBtn").addEventListener("click",async()=>{
 $("#searchInput").addEventListener("input",renderProducts);$("#sortSelect").addEventListener("change",renderProducts);$("#openCart").onclick=openCart;$("#checkoutBtn").onclick=checkout;$("#overlay").onclick=closeModals;$$("[data-close]").forEach(b=>b.onclick=closeModals);
 $("#categoryToggle").onclick=()=>$("#categoryMenu").classList.toggle("show");$("#categoryMenu").querySelectorAll("button").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$$(".category-card").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$$(".filter-chips button").forEach(b=>b.onclick=()=>setCategory(b.dataset.cat));$("#loginBtn").onclick=()=>location.href="account.html";$("#hamb").onclick=()=>$("#navlinks").classList.toggle("open");$("#year").textContent=new Date().getFullYear();
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModals();if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("#searchInput").focus()}});
-(window.CS_READY||Promise.resolve()).then(()=>{renderProducts();renderCart()});
+(window.CS_READY||Promise.resolve()).then(()=>{renderProducts();renderCart();
+ let c="";try{c=localStorage.getItem("cs_coupon")||""}catch(e){}
+ if(c){$("#couponInput").value=c;applyCoupon(c,true)}
+ if(location.hash==="#cart")openCart();
+});
+window.addEventListener("hashchange",()=>{if(location.hash==="#cart")openCart()});
 
 /* Smooth subscription-store style hero carousel */
 (()=> {

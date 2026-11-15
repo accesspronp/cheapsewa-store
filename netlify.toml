@@ -3,6 +3,8 @@
 
 [functions]
   directory = "netlify/functions"
+  # lets the server read the built-in product list to double-check prices at checkout
+  included_files = ["public/products-data.js"]
 
 [[headers]]
   for = "/admin.html"
